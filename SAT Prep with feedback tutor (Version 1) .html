@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SAT Feedback Tutor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e8eaf0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+
+    header p {
+      color: #8b8fa8;
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      max-width: 700px;
+      background: #1e2030;
+      border-radius: 99px;
+      height: 6px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6c63ff, #a78bfa);
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+
+    .progress-label {
+      width: 100%;
+      max-width: 700px;
+      text-align: right;
+      font-size: 0.8rem;
+      color: #5a5e7a;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: #1a1d2e;
+      border: 1px solid #2a2d42;
+      border-radius: 16px;
+      padding: 36px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    }
+
+    .question-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .badge {
+      background: #252840;
+      border: 1px solid #3a3d5c;
+      border-radius: 99px;
+      padding: 4px 14px;
+      font-size: 0.75rem;
+      color: #a78bfa;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .difficulty {
+      font-size: 0.78rem;
+      color: #5a5e7a;
+    }
+
+    .question-text {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: #d4d7f0;
+      margin-bottom: 28px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #12141f;
+      border: 1.5px solid #2a2d42;
+      border-radius: 12px;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      text-align: left;
+      color: #c8cbe0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: #6c63ff;
+      background: #1e2040;
+      color: #fff;
+    }
+
+    .option-btn .letter {
+      min-width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: #1e2030;
+      border: 1px solid #3a3d5c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #8b8fa8;
+      transition: all 0.18s ease;
+    }
+
+    .option-btn.correct {
+      border-color: #22c55e;
+      background: #0d2e1a;
+      color: #86efac;
+    }
+
+    .option-btn.correct .letter {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #fff;
+    }
+
+    .option-btn.wrong {
+      border-color: #ef4444;
+      background: #2e0d0d;
+      color: #fca5a5;
+    }
+
+    .option-btn.wrong .letter {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: #fff;
+    }
+
+    .option-btn.reveal {
+      border-color: #22c55e;
+      background: #0d2e1a;
+      color: #86efac;
+      opacity: 0.7;
+    }
+
+    .option-btn.reveal .letter {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #fff;
+    }
+
+    .option-btn:disabled { cursor: default; }
+
+    /* Feedback panel */
+    .feedback-panel {
+      margin-top: 24px;
+      border-radius: 12px;
+      padding: 20px 22px;
+      display: none;
+      animation: fadeSlide 0.35s ease;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback-panel.correct-panel {
+      background: #0a2416;
+      border: 1px solid #22c55e40;
+    }
+
+    .feedback-panel.wrong-panel {
+      background: #1f0f0a;
+      border: 1px solid #f9731640;
+    }
+
+    .feedback-panel .feedback-icon {
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+    }
+
+    .feedback-panel .feedback-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .correct-panel .feedback-title { color: #4ade80; }
+    .wrong-panel .feedback-title { color: #fb923c; }
+
+    .feedback-panel .feedback-body {
+      font-size: 0.92rem;
+      line-height: 1.65;
+      color: #b0b8d0;
+    }
+
+    .next-btn {
+      margin-top: 22px;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #6c63ff, #a78bfa);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.18s;
+      display: none;
+    }
+
+    .next-btn:hover { opacity: 0.88; }
+
+    /* Score summary */
+    .summary-card {
+      background: #1a1d2e;
+      border: 1px solid #2a2d42;
+      border-radius: 16px;
+      padding: 48px 36px;
+      max-width: 700px;
+      width: 100%;
+      text-align: center;
+      display: none;
+      animation: fadeSlide 0.4s ease;
+    }
+
+    .summary-card h2 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .summary-card .score-ring {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 6px solid #6c63ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 24px auto;
+      box-shadow: 0 0 30px #6c63ff55;
+    }
+
+    .summary-card .score-ring span {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #a78bfa;
+    }
+
+    .summary-card .score-ring small {
+      font-size: 0.78rem;
+      color: #5a5e7a;
+    }
+
+    .summary-card .summary-msg {
+      font-size: 1rem;
+      color: #8b8fa8;
+      margin-bottom: 28px;
+      max-width: 440px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .restart-btn {
+      padding: 14px 40px;
+      background: linear-gradient(135deg, #6c63ff, #a78bfa);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.18s;
+    }
+
+    .restart-btn:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📚 SAT Feedback Tutor</h1>
+  <p>Practice smarter. Learn from every choice.</p>
+</header>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+</div>
+<div class="progress-label" id="progressLabel">Question 1 of 8</div>
+
+<div class="card" id="questionCard">
+  <div class="question-meta">
+    <span class="badge" id="qSubject">Math</span>
+    <span class="difficulty" id="qDifficulty">⚡ Medium</span>
+  </div>
+  <div class="question-text" id="questionText"></div>
+  <div class="options" id="optionsContainer"></div>
+  <div class="feedback-panel" id="feedbackPanel">
+    <div class="feedback-icon" id="feedbackIcon"></div>
+    <div class="feedback-title" id="feedbackTitle"></div>
+    <div class="feedback-body" id="feedbackBody"></div>
+  </div>
+  <button class="next-btn" id="nextBtn">Next Question →</button>
+</div>
+
+<div class="summary-card" id="summaryCard">
+  <h2>Quiz Complete! 🎉</h2>
+  <div class="score-ring">
+    <span id="finalScore"></span>
+    <small>correct</small>
+  </div>
+  <p class="summary-msg" id="summaryMsg"></p>
+  <button class="restart-btn" onclick="restart()">Try Again</button>
+</div>
+
+<script>
+  const questions = [
+    {
+      subject: "Math",
+      difficulty: "⚡ Medium",
+      text: "If 3x + 7 = 22, what is the value of x?",
+      options: [
+        { letter: "A", text: "3" },
+        { letter: "B", text: "5" },
+        { letter: "C", text: "7" },
+        { letter: "D", text: "15" }
+      ],
+      correct: "B",
+      feedback: {
+        A: { type: "close",   msg: "You were on the right track subtracting from 22, but check your arithmetic one more time — you stopped one step too soon in isolating x." },
+        C: { type: "close",   msg: "Interesting — 7 appears right in the equation, which might be why it caught your eye. Careful not to lift a number directly from the problem when they're asking you to solve for something else." },
+        D: { type: "random",  msg: "15? Bold move. Were you just looking for the biggest number and hoping for the best? The equation has a clear path to the answer — follow the algebra step by step." }
+      }
+    },
+    {
+      subject: "Reading",
+      difficulty: "🔥 Hard",
+      text: "In a passage, an author describes a scientist who 'reluctantly conceded that the new data undermined her long-held theory.' The word 'reluctantly' most closely suggests that the scientist:",
+      options: [
+        { letter: "A", text: "was eager to revise her conclusions" },
+        { letter: "B", text: "did not trust the accuracy of the data" },
+        { letter: "C", text: "admitted the finding with some resistance" },
+        { letter: "D", text: "rejected the new data entirely" }
+      ],
+      correct: "C",
+      feedback: {
+        A: { type: "opposite", msg: "Think about what 'reluctantly' actually means — it signals the opposite of eagerness. Try reading the word choice as a clue to emotion, not just action." },
+        B: { type: "medium",   msg: "Doubting the data is a reasonable feeling, but the passage doesn't say she questioned it — it says she conceded. Focus on what 'conceded' and 'reluctantly' together are telling you about her attitude." },
+        D: { type: "random",   msg: "She *rejected* the data? The passage literally says she 'conceded' — which means she accepted it, even if unhappily. If a word in the passage means the direct opposite of your answer, that's a red flag to re-read." }
+      }
+    },
+    {
+      subject: "Math",
+      difficulty: "🌱 Easy",
+      text: "A rectangle has a length of 12 and a width of 5. What is its area?",
+      options: [
+        { letter: "A", text: "17" },
+        { letter: "B", text: "34" },
+        { letter: "C", text: "60" },
+        { letter: "D", text: "144" }
+      ],
+      correct: "C",
+      feedback: {
+        A: { type: "random",  msg: "17 is 12 + 5, which would give you the sum of two sides — not the area. Area is about multiplying dimensions together, not adding them." },
+        B: { type: "medium",  msg: "34 is actually the perimeter of this rectangle (2 × (12 + 5)). You were thinking about the right numbers, just the wrong formula. Perimeter adds, area multiplies." },
+        D: { type: "random",  msg: "144 is 12 × 12. Did you square the length and forget about the width entirely? Both dimensions have to show up in your calculation." }
+      }
+    },
+    {
+      subject: "Writing",
+      difficulty: "⚡ Medium",
+      text: "Choose the version that is grammatically correct and most concise:\n\n'The committee, after deliberating for several hours, they made their final decision.'",
+      options: [
+        { letter: "A", text: "The committee, after deliberating for several hours, they made their final decision." },
+        { letter: "B", text: "The committee made their final decision after deliberating for several hours." },
+        { letter: "C", text: "After deliberating for several hours, the final decision was made by the committee." },
+        { letter: "D", text: "Deliberating for several hours, the committee's decision was finally made." }
+      ],
+      correct: "B",
+      feedback: {
+        A: { type: "close",  msg: "You almost had it — this version has the right content, but notice the subject 'the committee' appears and then 'they' repeats it unnecessarily. Redundant subjects are a common SAT trap." },
+        C: { type: "medium", msg: "Grammatically acceptable, but passive voice ('was made by the committee') is wordier and weaker than active voice. The SAT rewards the cleaner, more direct phrasing." },
+        D: { type: "random", msg: "This one has a dangling modifier — 'Deliberating for several hours' needs to modify the committee, not 'the decision.' Decisions don't deliberate, committees do." }
+      }
+    },
+    {
+      subject: "Math",
+      difficulty: "🔥 Hard",
+      text: "If f(x) = 2x² − 3x + 1, what is f(−2)?",
+      options: [
+        { letter: "A", text: "3" },
+        { letter: "B", text: "11" },
+        { letter: "C", text: "15" },
+        { letter: "D", text: "−1" }
+      ],
+      correct: "C",
+      feedback: {
+        A: { type: "random",  msg: "3 shows up in the original function — but plugging in x = −2 means you need to actually substitute and compute, not borrow a number from the equation itself." },
+        B: { type: "close",   msg: "Very close! You likely made a sign error with (−2)². Remember: a negative number squared is always positive. Double-check that step and you'll land on it." },
+        D: { type: "medium",  msg: "A negative result suggests you may have forgotten to square −2 before multiplying, or dropped a sign somewhere. Work through each term separately: 2(−2)², then −3(−2), then +1." }
+      }
+    },
+    {
+      subject: "Reading",
+      difficulty: "⚡ Medium",
+      text: "A passage states: 'Despite initial skepticism, the therapy eventually gained widespread acceptance among practitioners.' What can be inferred about the therapy?",
+      options: [
+        { letter: "A", text: "It was immediately embraced by the medical community." },
+        { letter: "B", text: "It was proven ineffective after clinical trials." },
+        { letter: "C", text: "It faced doubt at first but later became commonly used." },
+        { letter: "D", text: "It was developed by a single practitioner working alone." }
+      ],
+      correct: "C",
+      feedback: {
+        A: { type: "opposite", msg: "The passage says 'despite initial skepticism' — skepticism is doubt, the opposite of immediate embrace. Pay close attention to contrast words like 'despite'; they flip the meaning." },
+        B: { type: "random",   msg: "Proven ineffective? The passage says it gained *widespread acceptance* — that's the opposite outcome. When answering inference questions, stay grounded in what the text actually says." },
+        D: { type: "random",   msg: "There's no mention anywhere of who developed it or how. When no evidence exists in the passage for a detail, that answer is almost certainly a trap. Don't bring outside assumptions in." }
+      }
+    },
+    {
+      subject: "Math",
+      difficulty: "🌱 Easy",
+      text: "What is 15% of 200?",
+      options: [
+        { letter: "A", text: "15" },
+        { letter: "B", text: "20" },
+        { letter: "C", text: "30" },
+        { letter: "D", text: "45" }
+      ],
+      correct: "C",
+      feedback: {
+        A: { type: "medium", msg: "15 would be 15% of 100, not 200. When the whole is larger, the percentage grows proportionally. Try converting 15% to a decimal (0.15) and multiplying directly." },
+        B: { type: "medium", msg: "20 is 10% of 200 — you might have divided by 10 instead of multiplying by 0.15. You were in the ballpark, but used the wrong percentage." },
+        D: { type: "random", msg: "45 would be closer to 22–23% of 200. If you guessed, the approach is to convert the percentage to a decimal — 15% becomes 0.15 — then multiply by 200." }
+      }
+    },
+    {
+      subject: "Writing",
+      difficulty: "🔥 Hard",
+      text: "Which choice most effectively combines the two sentences?\n\n'Maria finished the report early. She submitted it before the deadline.'",
+      options: [
+        { letter: "A", text: "Maria finished the report early, and she submitted it before the deadline." },
+        { letter: "B", text: "Having finished the report early, Maria submitted it before the deadline." },
+        { letter: "C", text: "Maria finished the report early; she submitted it before the deadline." },
+        { letter: "D", text: "Maria finished the report early so she submitted it before the deadline." }
+      ],
+      correct: "B",
+      feedback: {
+        A: { type: "close",  msg: "Grammatically fine, but 'and she' is a bit flat and repetitive. The SAT tends to favor answers that show a logical relationship between ideas more elegantly — one action leading to or enabling another." },
+        C: { type: "close",  msg: "The semicolon correctly joins two independent clauses, but it treats them as equally weighted separate thoughts. The ideal answer shows that finishing early *caused* or *enabled* the early submission." },
+        D: { type: "medium", msg: "The logic of 'so' is right — it implies cause and effect — but it needs a comma before 'so' when connecting two independent clauses. Small punctuation details like that separate a good answer from the best one." }
+      }
+    }
+  ];
+
+  let currentIndex = 0;
+  let score = 0;
+  let answered = false;
+
+  const correctPraise = [
+    { icon: "🌟", title: "Outstanding!", body: "You nailed it. That kind of precision on test day adds up fast — every point counts." },
+    { icon: "🎯", title: "Bullseye!", body: "Right on the money. You clearly understood what the question was really asking, not just what it seemed to be asking." },
+    { icon: "🚀", title: "Locked in!", body: "That's the kind of focused thinking that separates high scorers. Keep that momentum." },
+    { icon: "💡", title: "Sharp thinking!", body: "You cut through the noise and found the answer. That instinct is exactly what the SAT rewards." },
+    { icon: "✨", title: "Flawless!", body: "Clean, confident, correct. You're making this look easy — and that's a skill, not luck." },
+    { icon: "🏆", title: "Top-tier answer!", body: "This is the kind of accuracy that bumps your score into the upper percentiles. Well done." },
+    { icon: "⚡", title: "Electric!", body: "Fast and right is a dangerous combination on a timed test. You're dialed in." },
+    { icon: "🧠", title: "Big brain energy!", body: "You didn't just guess — you reasoned your way to the right answer. That's the whole game." }
+  ];
+
+  function loadQuestion() {
+    const q = questions[currentIndex];
+    answered = false;
+
+    document.getElementById('qSubject').textContent = q.subject;
+    document.getElementById('qDifficulty').textContent = q.difficulty;
+    document.getElementById('questionText').textContent = q.text;
+
+    const total = questions.length;
+    const pct = (currentIndex / total) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `Question ${currentIndex + 1} of ${total}`;
+
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="letter">${opt.letter}</span><span>${opt.text}</span>`;
+      btn.onclick = () => handleAnswer(opt.letter);
+      container.appendChild(btn);
+    });
+
+    const panel = document.getElementById('feedbackPanel');
+    panel.style.display = 'none';
+    panel.className = 'feedback-panel';
+    document.getElementById('nextBtn').style.display = 'none';
+  }
+
+  function handleAnswer(chosen) {
+    if (answered) return;
+    answered = true;
+
+    const q = questions[currentIndex];
+    const buttons = document.querySelectorAll('.option-btn');
+    const isCorrect = chosen === q.correct;
+
+    buttons.forEach(btn => {
+      btn.disabled = true;
+      const letter = btn.querySelector('.letter').textContent;
+      if (letter === q.correct) {
+        if (!isCorrect) btn.classList.add('reveal');
+      }
+      if (letter === chosen) {
+        btn.classList.add(isCorrect ? 'correct' : 'wrong');
+      }
+    });
+
+    const panel = document.getElementById('feedbackPanel');
+    panel.style.display = 'block';
+
+    if (isCorrect) {
+      score++;
+      const praise = correctPraise[Math.floor(Math.random() * correctPraise.length)];
+      panel.className = 'feedback-panel correct-panel';
+      document.getElementById('feedbackIcon').textContent = praise.icon;
+      document.getElementById('feedbackTitle').textContent = praise.title;
+      document.getElementById('feedbackBody').textContent = praise.body;
+    } else {
+      const fb = q.feedback[chosen];
+      const { icon, title } = wrongMeta(fb.type, chosen);
+      panel.className = 'feedback-panel wrong-panel';
+      document.getElementById('feedbackIcon').textContent = icon;
+      document.getElementById('feedbackTitle').textContent = title;
+      document.getElementById('feedbackBody').textContent = fb.msg;
+    }
+
+    document.getElementById('nextBtn').style.display = 'block';
+  }
+
+  function wrongMeta(type) {
+    const map = {
+      close:    { icon: "🔍", title: "So close — just a small miss!" },
+      medium:   { icon: "🧭", title: "Wrong direction, but fixable." },
+      random:   { icon: "🎲", title: "That was a long shot..." },
+      opposite: { icon: "🔄", title: "Flip your thinking on this one." }
+    };
+    return map[type] || map.medium;
+  }
+
+  document.getElementById('nextBtn').onclick = () => {
+    currentIndex++;
+    if (currentIndex >= questions.length) {
+      showSummary();
+    } else {
+      loadQuestion();
+    }
+  };
+
+  function showSummary() {
+    document.getElementById('questionCard').style.display = 'none';
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('progressLabel').textContent = `Complete!`;
+
+    const summary = document.getElementById('summaryCard');
+    summary.style.display = 'block';
+    document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
+
+    const pct = score / questions.length;
+    let msg;
+    if (pct === 1)       msg = "Perfect score. You didn't miss a single one — that's elite-level focus. The SAT should be worried about you.";
+    else if (pct >= 0.8) msg = "Really strong performance. You clearly have a solid foundation — a few targeted adjustments and you'll be untouchable.";
+    else if (pct >= 0.6) msg = "Decent start! You're getting the concepts but losing points on details. Review the feedback above and those edge cases will click.";
+    else if (pct >= 0.4) msg = "Room to grow, but that's what practice is for. Revisit the question types you missed and look for the pattern — there always is one.";
+    else                  msg = "Tough round, but this is exactly what practice is for. Every wrong answer here is a point you'll earn back on the real test. Keep going.";
+
+    document.getElementById('summaryMsg').textContent = msg;
+  }
+
+  function restart() {
+    currentIndex = 0;
+    score = 0;
+    document.getElementById('summaryCard').style.display = 'none';
+    document.getElementById('questionCard').style.display = 'block';
+    loadQuestion();
+  }
+
+  loadQuestion();
+</script>
+</body>
+</html>
