@@ -247,9 +247,8 @@ nav { display: flex; align-items: center; justify-content: space-between; paddin
 // ==========================================
 // 1. CONFIG & STATE 
 // ==========================================
-const GEMINI_API_KEY = null;
-const GEMINI_MODEL = "gemini-3.5-flash";
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_KEY = "AQ.Ab8RN6LhsLU6uUrpna8zyuBWBMmZjfNOIgcS7jur_oha6xEvwg"; 
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 let aiEnabled = true;
 let classCode = '';
@@ -344,9 +343,7 @@ async function callAI(system, user, isJSON = false) {
   
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
-  const text = data?.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('').trim();
-  if (!text) throw new Error('Gemini returned an empty response.');
-  return text.replace(/```json|```/g, '').trim();
+  return data.candidates[0].content.parts[0].text.replace(/```json|```/g,'').trim();
 }
 
 async function translateQuestionLive(questionObj) {
@@ -450,6 +447,7 @@ async function loadQuestion() {
   document.getElementById('explanation').style.display = 'none';
   document.getElementById('next-btn').disabled = true;
 
+  // Use full length so you can pass question 3!
   const maxQuestions = allRealQuestions.length; 
   document.getElementById('q-counter').textContent = `${dictionary[currentLang]['questionLabel']} ${currentQ + 1} ${dictionary[currentLang]['ofLabel']} ${maxQuestions}`;
   document.getElementById('prog').style.width = `${((currentQ + 1) / maxQuestions) * 100}%`;
@@ -460,65 +458,34 @@ async function loadQuestion() {
   tag.textContent = isMath ? dictionary[currentLang]['mathTitle'] : dictionary[currentLang]['rwTitle'];
   tag.className = `q-section-tag ${isMath ? 'tag-math' : 'tag-rw'}`;
 
+  // Process JIT translation
   q = await translateQuestionLive(q);
 
   document.getElementById('q-loading').style.display = 'none';
   document.getElementById('q-content').style.display = 'block';
-  document.getElementById('q-text').textContent = q.question || '';
+  document.getElementById('q-text').textContent = q.question;
 
+  // Render Prompt Images
   const imgEl = document.getElementById('q-image');
   if (q.hasPromptImage && q.questionImage) { 
-    imgEl.src = q.questionImage; 
-    imgEl.style.display = 'block'; 
+      imgEl.src = q.questionImage; 
+      imgEl.style.display = 'block'; 
   } else { 
-    imgEl.removeAttribute('src');
-    imgEl.style.display = 'none'; 
+      imgEl.style.display = 'none'; 
   }
 
   const grid = document.getElementById('answers');
-  grid.innerHTML = '';
-
-  if (q.hasChoices && q.choices) {
-    Object.entries(q.choices).forEach(([letter, text]) => {
-      const btn = document.createElement('button');
-      btn.className = 'answer-btn';
-      btn.innerHTML = `<b>${escapeHTML(letter)}.</b> ${escapeHTML(String(text || ''))}`;
-      btn.addEventListener('click', () => {
-        selectAnswer(letter, q.correctAnswer, q.section, q.domain, btn, q.rationale || '');
-      });
-      grid.appendChild(btn);
-    });
+  if (q.hasChoices) {
+    grid.innerHTML = Object.entries(q.choices).map(([letter, text]) => 
+      `<button class="answer-btn" onclick="selectAnswer('${letter}', '${q.correctAnswer}', '${q.section}', '${q.domain}', this, \`${(q.rationale||'').replace(/[`']/g, "")}\`)"><b>${letter}.</b> ${text}</button>`
+    ).join('');
   } else {
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.id = 'free-response';
-    input.placeholder = dictionary[currentLang]['freeResponsePlaceholder'];
-
-    const btn = document.createElement('button');
-    btn.className = 'btn secondary';
-    btn.style.width = '100%';
-    btn.textContent = dictionary[currentLang]['submitBtn'];
-    btn.addEventListener('click', () => {
-      selectAnswer(input.value, q.correctAnswer, q.section, q.domain, null, q.rationale || '');
-    });
-
-    grid.appendChild(input);
-    grid.appendChild(btn);
+    grid.innerHTML = `<input type="text" id="free-response" placeholder="${dictionary[currentLang]['freeResponsePlaceholder']}"><button class="btn secondary" style="width:100%" onclick="selectAnswer(document.getElementById('free-response').value, '${q.correctAnswer}', '${q.section}', '${q.domain}', null, \`${(q.rationale||'').replace(/[`']/g, "")}\`)">${dictionary[currentLang]['submitBtn']}</button>`;
   }
 
-  const chatHistory = document.getElementById('chat-history');
-  if (chatHistory) chatHistory.innerHTML = '';
+  document.getElementById('chat-history').innerHTML = '';
   document.getElementById('ai-tutor-panel').style.display = 'none';
   document.getElementById('tutor-toggle-btn').textContent = dictionary[currentLang]['openTutorBtn'];
-}
-
-function escapeHTML(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
 
 function selectAnswer(selected, correct, section, domain, btnElement, rationale) {
