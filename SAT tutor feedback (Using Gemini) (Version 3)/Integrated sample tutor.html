@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valley SAT Prep - Diagnostic</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --correct-bg: #dcfce7;
+      --correct-border: #22c55e;
+      --wrong-bg: #fee2e2;
+      --wrong-border: #ef4444;
+      --hover-bg: #f1f5f9;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .tutor-container {
+      width: 100%;
+      max-width: 800px;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--primary);
+      margin-bottom: 0.2rem;
+    }
+    
+    .progress-tracker {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+
+    .question-card {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .question-metadata {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .question-text {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      white-space: pre-wrap;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .choice-btn {
+      text-align: left;
+      padding: 1rem 1.5rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      background: var(--card-bg);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      line-height: 1.4;
+    }
+
+    .choice-btn:hover:not(:disabled) {
+      background: var(--hover-bg);
+      border-color: #cbd5e1;
+    }
+
+    .choice-btn:disabled {
+      cursor: default;
+    }
+
+    .choice-btn.selected.wrong {
+      background: var(--wrong-bg);
+      border-color: var(--wrong-border);
+    }
+
+    .choice-btn.correct-reveal {
+      background: var(--correct-bg);
+      border-color: var(--correct-border);
+    }
+
+    .tutor-feedback {
+      display: none;
+      background: #eff6ff;
+      border-left: 4px solid var(--primary);
+      padding: 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin-top: 1.5rem;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .tutor-feedback h3 {
+      margin-top: 0;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tutor-feedback p {
+      margin-bottom: 0;
+      line-height: 1.5;
+    }
+
+    .next-btn {
+      display: none;
+      width: 100%;
+      padding: 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1.5rem;
+    }
+
+    .next-btn:hover {
+      background: #1d4ed8;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tutor-container">
+    <header>
+      <h1>Valley SAT Prep</h1>
+      <div class="progress-tracker" id="progress-tracker">Question 1 of 10</div>
+    </header>
+
+    <div class="question-card" id="question-card">
+      <!-- Injected via JS -->
+    </div>
+    
+    <div class="tutor-feedback" id="tutor-feedback">
+      <h3>🤖 Valley AI Tutor</h3>
+      <p id="tutor-message"></p>
+    </div>
+
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question ➔</button>
+  </div>
+
+<script>
+// 10 sample Reading & Writing questions pulled from the Valley SAT Prep JSON.
+const satData = [
+  {
+    "id": "d73a908a",
+    "section": "Reading and Writing",
+    "skill": "Central Ideas and Details",
+    "question": "Believing that living in an impractical space can heighten awareness and even improve health, conceptual artists Madeline Gins and Shusaku Arakawa designed an apartment building in Japan to be more fanciful than functional. A kitchen counter is chest-high on one side and knee-high on the other; a ceiling has a door to nowhere. The effect is disorienting but invigorating: after four years there, filmmaker Nobu Yamaoka reported significant health benefits.\n\nWhich choice best states the main idea of the text?",
+    "choices": {
+      "A": "Although inhabiting a home surrounded by fanciful features such as those designed by Gins and Arakawa can be rejuvenating, it is unsustainable.",
+      "B": "Designing disorienting spaces like those in the Gins and Arakawa building is the most effective way to create a physically stimulating environment.",
+      "C": "As a filmmaker, Yamaoka has long supported the designs of conceptual artists such as Gins and Arakawa.",
+      "D": "Although impractical, the design of the apartment building by Gins and Arakawa may improve the well-being of the building’s residents."
+    },
+    "correctAnswer": "D"
+  },
+  {
+    "id": "ed314256",
+    "section": "Reading and Writing",
+    "skill": "Central Ideas and Details",
+    "question": "The most recent iteration of the immersive theater experience Sleep No More, which premiered in New York City in 2011, transforms its performance space—a five-story warehouse—into a 1930s-era hotel. Audience members, who wander through the labyrinthine venue at their own pace and follow the actors as they play out simultaneous, interweaving narrative loops, confront the impossibility of experiencing the production in its entirety. The play’s refusal of narrative coherence thus hinges on the sense of spatial fragmentation that the venue’s immense and intricate layout generates.\n\nWhat does the text most strongly suggest about Sleep No More’s use of its performance space?",
+    "choices": {
+      "A": "The choice of a New York City venue likely enabled the play’s creators to experiment with the use of theatrical space in a way that venues from earlier productions could not.",
+      "B": "Audience members likely find the experience of the play disappointing because they generally cannot make their way through the entire venue.",
+      "C": "The production’s dependence on a particular performance environment would likely make it difficult to reproduce exactly in a different theatrical space.",
+      "D": "Audience members who navigate the space according to a recommended itinerary will likely have a better grasp of the play’s narrative than audience members who depart from that itinerary."
+    },
+    "correctAnswer": "C"
+  },
+  {
+    "id": "8c1be131",
+    "section": "Reading and Writing",
+    "skill": "Central Ideas and Details",
+    "question": "During the World War II era, some Mexican American women adopted a striking new look called pachuca style. They wore altered men’s jackets or zoot suits (wide-legged, long-coated suits) and dramatic makeup, and they combed their hair into high, rounded shapes. Some people criticized pachuca style, saying it was dangerous and women should dress traditionally. But historians see things differently. They see pachuca style as a form of rebellion against the era’s rigid social expectations for women. They say that it showed a desire for self-expression and freedom on the part of women who adopted the style.\n\nAccording to the text, how do historians view pachuca style?",
+    "choices": {
+      "A": "They think that pachuca style was such a popular trend that it continues to influence fashion in the United States to the present day.",
+      "B": "They think that pachuca style was a way for some Mexican American women to express themselves and resist strict social expectations.",
+      "C": "They think that pachuca style was celebrated because it enabled some Mexican American women to show their support for the United States during World War II.",
+      "D": "They think that pachuca style was similar to other fashion trends that different groups of women adopted in the same period."
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "id": "22e4d633",
+    "section": "Reading and Writing",
+    "skill": "Command of Evidence",
+    "question": "Although many transposons, DNA sequences that move within an organism’s genome through shuffling or duplication, have become corrupted and inactive over time, those from the long interspersed nuclear elements (LINE) family appear to remain active in the genomes of some species. In humans, they are functionally important within the hippocampus, a brain structure that supports complex cognitive processes. When the results of molecular analysis of two species of octopus—an animal known for its intelligence—were announced in 2022, the confirmation of a LINE transposon in Octopus vulgaris and Octopus bimaculoides genomes prompted researchers to hypothesize that that transposon family is tied to a species’ capacity for advanced cognition.\n\nWhich finding, if true, would most directly support the researchers’ hypothesis?",
+    "choices": {
+      "A": "The LINE transposon in O. vulgaris and O. bimaculoides genomes is active in an octopus brain structure that functions similarly to the human hippocampus.",
+      "B": "The human genome contains multiple transposons from the LINE family that are all primarily active in the hippocampus.",
+      "C": "A consistent number of copies of LINE transposons is present across the genomes of most octopus species, with few known corruptions.",
+      "D": "O. vulgaris and O. bimaculoides have smaller brains than humans do relative to body size, but their genomes contain sequences from a wider variety of transposon families."
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "id": "458b4a11",
+    "section": "Reading and Writing",
+    "skill": "Central Ideas and Details",
+    "question": "To understand how temperature change affects microorganism-mediated cycling of soil nutrients in alpine ecosystems, Eva Kaštovská et al. collected plant-soil cores in the Tatra Mountains at elevations around 2,100 meters and transplanted them to elevations of 1,700–1,800 meters, where the mean air temperature was warmer by 2°C. Microorganism-mediated nutrient cycling was accelerated in the transplanted cores; crucially, microorganism community composition was unchanged, allowing Kaštovská et al. to attribute the acceleration to temperature-induced increases in microorganism activity.\n\nIt can most reasonably be inferred from the text that the finding about the microorganism community composition was important for which reason?",
+    "choices": {
+      "A": "It provided preliminary evidence that microorganism-mediated nutrient cycling was accelerated in the transplanted cores.",
+      "B": "It suggested that temperature-induced changes in microorganism activity may be occurring at increasingly high elevations.",
+      "C": "It ruled out a potential alternative explanation for the acceleration in microorganism-mediated nutrient cycling.",
+      "D": "It clarified that microorganism activity levels in the plant-soil cores varied depending on which microorganisms comprised the community."
+    },
+    "correctAnswer": "C"
+  },
+  {
+    "id": "0d7f4966",
+    "section": "Reading and Writing",
+    "skill": "Command of Evidence",
+    "question": "Jean-Bernard Caron and colleagues recently discovered a cache of jellyfish fossils in the Burgess Shale, a site in the Canadian Rockies that is rich in fossils from the Cambrian period (over 500 million years ago). Caron and colleagues claim that these are the oldest jellyfish fossils ever discovered. In the past twenty years, two sites in China and the United States have yielded fossils of a similar age that some experts believe are most likely jellyfish due to their shapes and the appearance of projecting tentacles. But Caron and colleagues argue that the apparent tentacles are in fact the comb rows of ctenophores, gelatinous animals that are only distantly related to jellyfish.\n\nWhich statement, if true, would most directly weaken the claim by Caron and colleagues about the fossils found in China and the United States?",
+    "choices": {
+      "A": "Sites in the Canadian Rockies from later periods than the Cambrian period have yielded fossils that have been conclusively identified as ctenophore fossils.",
+      "B": "The fossils found in China and the United States are so poorly preserved that though they cannot be conclusively identified as jellyfish, they cannot be conclusively identified as ctenophores either.",
+      "C": "While ctenophore fossils have been discovered in China and the United States, they have never been discovered in the Burgess Shale.",
+      "D": "The fossils discovered by Caron and colleagues in the Burgess Shale were better preserved than the fossils discovered by other researchers in China and the United States."
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "id": "3543e6e2",
+    "section": "Reading and Writing",
+    "skill": "Central Ideas and Details",
+    "question": "The following text is from Jane Austen’s 1811 novel Sense and Sensibility. Elinor lives with her younger sisters and her mother, Mrs. Dashwood.\n\nElinor, this eldest daughter, whose advice was so effectual, possessed a strength of understanding, and coolness of judgment, which qualified her, though only nineteen, to be the counsellor of her mother, and enabled her frequently to counteract, to the advantage of them all, that eagerness of mind in Mrs. Dashwood which must generally have led to imprudence. She had an excellent heart;—her disposition was affectionate, and her feelings were strong; but she knew how to govern them: it was a knowledge which her mother had yet to learn; and which one of her sisters had resolved never to be taught.\n\nAccording to the text, what is true about Elinor?",
+    "choices": {
+      "A": "Elinor often argues with her mother but fails to change her mind.",
+      "B": "Elinor can be overly sensitive with regard to family matters.",
+      "C": "Elinor thinks her mother is a bad role model.",
+      "D": "Elinor is remarkably mature for her age."
+    },
+    "correctAnswer": "D"
+  },
+  {
+    "id": "068f939b",
+    "section": "Reading and Writing",
+    "skill": "Command of Evidence",
+    "question": "The ancient Greek concept of “mimesis,” a term used in the works of Plato, Aristotle, and other Greek philosophers in discussions of representational art—visual, performance, or literary art that aims to depict the real world—is a foundational concept of the Western philosophy of aesthetics. Mimesis is typically translated as “imitation” in modern editions of ancient Greek texts, but scholar Stephen Halliwell warns that this is overly reductive: “imitation” implies that art merely copies—and is thus by definition entirely derivative of—a reality that exists outside and prior to the work of art, and translating “mimesis” thusly obscures the multifaceted ways in which the ancient Greeks understood the relationship between art and reality.\n\nWhich statement, if true, would most directly support the claim by Halliwell presented in the text?",
+    "choices": {
+      "A": "One of the earliest appearances of mimesis’s root word, mimos, can be found in an ancient Greek tragedy in reference to dramatic impersonation.",
+      "B": "Both Plato’s and Aristotle’s theorizations of mimesis examine the psychological effects that works of art induce in the viewer or listener.",
+      "C": "Although several of Plato’s earliest philosophical works discuss aesthetic ideas, the term doesn’t appear in his discussions of art until Cratylus, a later work.",
+      "D": "Although Plato’s writings typically characterize representational art as an inferior reflection of the physical world, Aristotle suggests that mimesis can refer to art’s capacity to envision hypothetical conditions that could, but don’t yet, exist."
+    },
+    "correctAnswer": "D"
+  },
+  {
+    "id": "29f5c8c2",
+    "section": "Reading and Writing",
+    "skill": "Command of Evidence",
+    "question": "Fish whose DNA has been modified to include genetic material from other species are known as transgenic. Some transgenic fish have genes from jellyfish that result in fluorescence (that is, they glow in the dark). Although these fish were initially engineered for research purposes in the 1990s, they were sold as pets in the 2000s and can now be found in the wild in creeks in Brazil. A student in a biology seminar who is writing a paper on these fish asserts that their escape from Brazilian fish farms into the wild may have significant negative long-term ecological effects.\n\nWhich quotation from a researcher would best support the student’s assertion?",
+    "choices": {
+      "A": "“In one site in the wild where transgenic fish were observed, females outnumbered males, while in another the numbers of females and males were equivalent.”",
+      "B": "“Though some presence of transgenic fish in the wild has been recorded, there are insufficient studies of the impact of those fish on the ecosystems into which they are introduced.”",
+      "C": "“The ecosystems into which transgenic fish are known to have been introduced may represent a subset of the ecosystems into which the fish have actually been introduced.”",
+      "D": "“Through interbreeding, transgenic fish might introduce the trait of fluorescence into wild fish populations, making those populations more vulnerable to predators.”"
+    },
+    "correctAnswer": "D"
+  },
+  {
+    "id": "ca5a3fb4",
+    "section": "Reading and Writing",
+    "skill": "Inferences",
+    "question": "The practice of logging (cutting down trees for commercial and other uses) is often thought to be at odds with forest conservation (the work of preserving forests). However, a massive study in forest management and preservation spanning 700,000 hectares in Oregon’s Malheur National Forest calls that view into question. So far, results of the study suggest that forest plots that have undergone limited logging (the careful removal of a controlled number of trees) may be more robust than plots that haven’t been logged at all. These results, in turn, suggest that ______\n\nWhich choice most logically completes the text?",
+    "choices": {
+      "A": "logging may be useful for maintaining healthy forests, provided it is limited.",
+      "B": "other forest management strategies are more effective than limited logging.",
+      "C": "as time passes, it will be difficult to know whether limited logging has any benefits.",
+      "D": "the best way to support forest health may be to leave large forests entirely untouched."
+    },
+    "correctAnswer": "A"
+  }
+];
+
+let currentQuestionIndex = 0;
+
+function renderQuestion() {
+  const q = satData[currentQuestionIndex];
+  const card = document.getElementById('question-card');
+  
+  // Update progress tracker
+  document.getElementById('progress-tracker').innerText = `Question ${currentQuestionIndex + 1} of ${satData.length}`;
+
+  card.innerHTML = `
+    <div class="question-metadata">
+      <span>${q.section}</span>
+      <span>•</span>
+      <span>${q.skill}</span>
+    </div>
+    <div class="question-text">${q.question.replace(/\n\n/g, '<br><br>')}</div>
+    <div class="choices" id="choices-container">
+      ${Object.entries(q.choices).map(([key, text]) => `
+        <button class="choice-btn" data-key="${key}" onclick="handleAnswer('${key}')">
+          <strong>${key}.</strong> ${text}
+        </button>
+      `).join('')}
+    </div>
+  `;
+
+  document.getElementById('tutor-feedback').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+}
+
+async function handleAnswer(selectedKey) {
+  const q = satData[currentQuestionIndex];
+  const isCorrect = selectedKey === q.correctAnswer;
+  
+  // Lock choices and apply visual cues
+  const buttons = document.querySelectorAll('.choice-btn');
+  buttons.forEach(btn => {
+    btn.disabled = true;
+    if (btn.dataset.key === q.correctAnswer) {
+      btn.classList.add('correct-reveal');
+    }
+    if (btn.dataset.key === selectedKey && !isCorrect) {
+      btn.classList.add('wrong');
+    }
+  });
+
+  // Fetch the feedback (Simulated LLM call)
+  const feedbackMsg = await simulateAIFeedback(
+    isCorrect, 
+    selectedKey,
+    q.correctAnswer,
+    q.choices[selectedKey]
+  );
+
+  document.getElementById('tutor-message').innerText = feedbackMsg;
+  document.getElementById('tutor-feedback').style.display = 'block';
+  document.getElementById('next-btn').style.display = 'block';
+  
+  // Scroll to bottom so next button is visible
+  setTimeout(() => {
+    document.getElementById('next-btn').scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, 100);
+}
+
+function nextQuestion() {
+  currentQuestionIndex++;
+  if (currentQuestionIndex < satData.length) {
+    renderQuestion();
+  } else {
+    document.getElementById('progress-tracker').style.display = 'none';
+    document.getElementById('question-card').innerHTML = `<div class="question-text" style="text-align:center; font-weight:bold; font-size:1.5rem;">Diagnostic Complete! <br><br>Generating your detailed gap analysis...</div>`;
+    document.getElementById('tutor-feedback').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+  }
+}
+
+// ==========================================
+// SIMULATED AI TUTOR LOGIC FOR THE DEMO
+// ==========================================
+// In production, send the exact system prompt from the previous iteration to your LLM.
+// For this demo, we simulate evaluating the "closeness" of the student's answer.
+async function simulateAIFeedback(isCorrect, selectedKey, correctKey, selectedText) {
+  if (isCorrect) {
+    const praiseBank = [
+      "Spot on! You nailed the core concept perfectly.",
+      "Excellent work! Your reasoning is completely aligned with the text.",
+      "You got it! Great job breaking down the nuances of that question.",
+      "Exactly right. You didn't fall for any of the distractors!"
+    ];
+    return praiseBank[Math.floor(Math.random() * praiseBank.length)];
+  }
+
+  // Calculate "distance" between the choice letters to mock the AI's tiered evaluation
+  // (e.g., A=65, B=66 -> distance 1)
+  const distance = Math.abs(selectedKey.charCodeAt(0) - correctKey.charCodeAt(0));
+  
+  // Extract a small snippet of their wrong answer to prove the AI "read" it
+  const words = selectedText.split(" ");
+  const textSnippet = words.length > 5 ? words.slice(0, 6).join(" ") + "..." : selectedText;
+
+  if (distance === 1) {
+    // Tier 1: Very Close
+    return `So close! You were on the right track focusing on "${textSnippet}", but you barely missed a tiny nuance. Look closely at the specific wording—does the text directly support that exact detail?`;
+  } 
+  else if (distance === 2) {
+    // Tier 2: Somewhat off
+    return `You're in the right ballpark, but watch your direction! A phrase like "${textSnippet}" introduces ideas or extremes not explicitly proven in the passage. Try pointing your thinking back to the main subject of the text.`;
+  } 
+  else {
+    // Tier 3: Way off
+    return `Okay, be honest... was this a random long shot? 😜 Focusing on "${textSnippet}" takes us pretty far away from the core passage! When you're stuck, go back to the most basic facts the author presents rather than taking a flyer.`;
+  }
+}
+
+// Initialize the first question when the page loads
+window.onload = renderQuestion;
+</script>
+
+</body>
+</html>
