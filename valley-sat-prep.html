@@ -148,7 +148,7 @@ let QUESTION_BANK = EMBEDDED_DB.questions || EMBEDDED_DB;
 let currentLang = localStorage.getItem('vsp_lang') || 'en';
 let currentRole = null, currentClass = '', studentName = '';
 let currentQ = 0, questions = [], answers = [], selectedConfidence = null, qStartTime = 0;
-const GEMINI_API_KEY = null; // Set your Gemini API key here for AI tutor features
+const GEMINI_API_KEY = ""; // Set your Gemini API key here for AI tutor features
 const GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -213,6 +213,7 @@ async function callGemini(systemPrompt, userPrompt, options={}){
 
 let aiEnabled = localStorage.getItem('vsp_ai_enabled') !== 'false';
 let latestDashboardResults = [];
+const QUESTION_TRANSLATION_CACHE = new Map();
 
 const Q_PLAN = [
   {section:'Reading and Writing', domain:'Information and Ideas', difficulty:'Medium'},
@@ -235,6 +236,62 @@ const I18N = {
 function t(k){ return (I18N[currentLang] && I18N[currentLang][k]) || I18N.en[k] || k; }
 function applyI18n(){ document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n)); document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>el.placeholder=t(el.dataset.i18nPlaceholder)); document.getElementById('lang-toggle-btn').textContent = currentLang==='en'?'Español':'English'; document.getElementById('translation-note').style.display = currentLang==='es'?'block':'none'; }
 function toggleLanguage(){ currentLang = currentLang === 'en' ? 'es' : 'en'; localStorage.setItem('vsp_lang', currentLang); applyI18n(); if(document.getElementById('student-q-screen').style.display !== 'none' && questions[currentQ]) renderQuestion(questions[currentQ]); }
+function stripChoicePrefix(letter, text){ return String(text ?? '').replace(new RegExp('^\\s*' + String(letter).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\.\\s*', 'i'), '').trim(); }
+function shouldAITranslateQuestion(q){ return currentLang === 'es' && q && q.translationEligible !== false && !q.imageReliant; }
+function parseGeminiJson(text){
+  const raw=String(text||'').trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```$/,'').trim();
+  try{ return JSON.parse(raw); }catch(e){}
+  const start=raw.indexOf('{'), end=raw.lastIndexOf('}');
+  if(start !== -1 && end !== -1 && end > start) return JSON.parse(raw.slice(start,end+1));
+  throw new Error('Translation response was not valid JSON.');
+}
+function getChoiceMapForTranslation(q){
+  const c=q?.choices || {};
+  if(Array.isArray(c)){ const out={}; c.forEach((txt,i)=>out[String.fromCharCode(65+i)] = String(txt ?? '')); return out; }
+  return Object.fromEntries(Object.entries(c).map(([letter,text])=>[letter, stripChoicePrefix(letter,text)]));
+}
+async function translateQuestionBundle(q){
+  const key=`${q.id || q.question}:es`;
+  if(QUESTION_TRANSLATION_CACHE.has(key)) return QUESTION_TRANSLATION_CACHE.get(key);
+  const payload={question:q.question || '', choices:getChoiceMapForTranslation(q), rationale:q.rationale || ''};
+  const system='You are a careful SAT Spanish translator. Translate ONLY the SAT question, answer choices, and rationale into clear academic Spanish. Keep numbers, formulas, variable names, units, and answer-choice letters unchanged. Do not solve, hint, summarize, or explain. Return valid JSON only with keys: question, choices, rationale.';
+  const user=`Translate this SAT item to Spanish. Return JSON only.\n${JSON.stringify(payload)}`;
+  const text=await callGemini(system,user,{maxOutputTokens:1400,temperature:0.1});
+  const parsed=parseGeminiJson(text);
+  const translated={
+    question: String(parsed.question || q.question || ''),
+    choices: parsed.choices && typeof parsed.choices === 'object' ? parsed.choices : payload.choices,
+    rationale: String(parsed.rationale || q.rationale || '')
+  };
+  QUESTION_TRANSLATION_CACHE.set(key, translated);
+  return translated;
+}
+function getLocalizedQuestionText(q){ return shouldAITranslateQuestion(q) && q._translations?.es?.question ? q._translations.es.question : (q.question || ''); }
+function getLocalizedRationale(q){ return shouldAITranslateQuestion(q) && q._translations?.es?.rationale ? q._translations.es.rationale : (q.rationale || ''); }
+async function applyQuestionTranslation(q, token){
+  if(q._translationLoading) return;
+  q._translationLoading=true;
+  const qt=document.getElementById('q-text');
+  const answersEl=document.getElementById('answers');
+  if(token === currentQuestionToken && shouldAITranslateQuestion(q)){
+    qt.textContent='Traduciendo pregunta con IA…';
+    answersEl.querySelectorAll('button').forEach(b=>b.disabled=true);
+  }
+  try{
+    const translated=await translateQuestionBundle(q);
+    q._translations={...(q._translations||{}), es: translated};
+  }catch(e){
+    console.warn('Question translation failed:', e);
+  }finally{
+    q._translationLoading=false;
+    if(token === currentQuestionToken && shouldAITranslateQuestion(q)){
+      qt.textContent=getLocalizedQuestionText(q);
+      renderChoices(q);
+      const exp=document.getElementById('explanation');
+      if(exp.style.display === 'block') exp.textContent=exp.dataset.prefix || exp.textContent;
+    }
+  }
+}
 function setPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById(id).classList.add('active'); applyI18n(); }
 function goHome(){ document.querySelector('.home-hero')?.classList.remove('auth-mode'); setPage('page-home'); currentRole=null; document.getElementById('role-input-area').innerHTML=''; }
 function showRoleInput(role){
@@ -412,13 +469,14 @@ function setAIEnabled(v){ aiEnabled=Boolean(v); localStorage.setItem('vsp_ai_ena
 function startDiagnostic(){ studentName = (document.getElementById('student-name-input').value || 'Student').trim() || 'Student'; currentQ=0; questions=[]; answers=[]; selectDiagnosticQuestions(); document.getElementById('student-name-screen').style.display='none'; document.getElementById('student-results').style.display='none'; document.getElementById('student-q-screen').style.display='block'; setAIEnabled(document.getElementById('student-ai-toggle')?.checked !== false); loadQuestion(); }
 function normalizeDomain(d){ return String(d||'').replace('&','and'); }
 function selectDiagnosticQuestions(){ const used=new Set(); questions = Q_PLAN.map((spec,idx)=>{ let pool=QUESTION_BANK.filter(q=>q.section===spec.section || q.test===spec.section); if(currentLang==='es') pool=pool.filter(q=>q.translationEligible!==false && !q.imageReliant); let domainPool=pool.filter(q=>normalizeDomain(q.domain).includes(normalizeDomain(spec.domain)) || normalizeDomain(spec.domain).includes(normalizeDomain(q.domain))); if(domainPool.length) pool=domainPool; let diffPool=pool.filter(q=>q.difficulty===spec.difficulty); if(diffPool.length) pool=diffPool; pool=pool.filter(q=>!used.has(q.id)); if(!pool.length) pool=QUESTION_BANK.filter(q=>!used.has(q.id) && (currentLang==='en' || q.translationEligible!==false)); const q = pool[Math.floor(Math.random()*pool.length)] || QUESTION_BANK[idx % QUESTION_BANK.length]; used.add(q.id); return {...q}; }); }
-function loadQuestion(){ selectedConfidence=null; qStartTime=Date.now(); document.getElementById('q-loading').style.display='flex'; document.getElementById('q-content').style.display='none'; document.getElementById('confidence-card').style.display='none'; document.getElementById('next-btn').disabled=true; document.querySelectorAll('.confidence-btn').forEach(b=>b.classList.remove('selected')); setTimeout(()=>renderQuestion(questions[currentQ]),150); }
-function renderQuestion(q){ document.getElementById('q-loading').style.display='none'; document.getElementById('q-content').style.display='block'; document.getElementById('q-counter').textContent=`Question ${currentQ+1} of ${questions.length}`; document.getElementById('prog').style.width=`${((currentQ+1)/questions.length)*100}%`; const tag=document.getElementById('q-section-tag'); tag.textContent = q.section === 'Math' ? 'Math' : 'Reading & Writing'; tag.className = 'q-section-tag ' + (q.section==='Math'?'tag-math':'tag-rw'); const imgWrap=document.getElementById('q-image-wrap'), img=document.getElementById('q-image'), qt=document.getElementById('q-text'); if(q.image){ img.src=q.image; imgWrap.style.display='block'; qt.textContent = q.imageReliant ? 'This question uses the image below. Translation modules should skip this item.' : (q.question||''); } else { img.removeAttribute('src'); imgWrap.style.display='none'; qt.textContent=q.question || ''; } document.getElementById('explanation').style.display='none'; document.getElementById('explanation').textContent=''; document.getElementById('ai-tutor-panel').style.display='none'; document.getElementById('tutor-toggle-btn').textContent=t('openTutor'); document.getElementById('chat-history').innerHTML=''; renderChoices(q); }
-function normalizeChoices(q){ if(q.image && q.correctAnswer && /^[A-D]$/i.test(q.correctAnswer)) return ['A','B','C','D'].map(l=>({letter:l,text:l,letterOnly:true})); const c=q.choices; if(!c || Object.keys(c).length===0) return []; if(Array.isArray(c)) return c.map((txt,i)=>({letter:String.fromCharCode(65+i),text:txt})); return Object.entries(c).filter(([l,txt])=>txt!==null&&txt!==undefined&&String(txt).trim()!=='').map(([letter,text])=>({letter, text:`${letter}. ${text}`})); }
+let currentQuestionToken = 0;
+function loadQuestion(){ selectedConfidence=null; qStartTime=Date.now(); currentQuestionToken++; document.getElementById('q-loading').style.display='flex'; document.getElementById('q-content').style.display='none'; document.getElementById('confidence-card').style.display='none'; document.getElementById('next-btn').disabled=true; document.querySelectorAll('.confidence-btn').forEach(b=>b.classList.remove('selected')); const token=currentQuestionToken; setTimeout(()=>renderQuestion(questions[currentQ], token),150); }
+function renderQuestion(q, token=currentQuestionToken){ document.getElementById('q-loading').style.display='none'; document.getElementById('q-content').style.display='block'; document.getElementById('q-counter').textContent=`Question ${currentQ+1} of ${questions.length}`; document.getElementById('prog').style.width=`${((currentQ+1)/questions.length)*100}%`; const tag=document.getElementById('q-section-tag'); tag.textContent = q.section === 'Math' ? 'Math' : 'Reading & Writing'; tag.className = 'q-section-tag ' + (q.section==='Math'?'tag-math':'tag-rw'); const imgWrap=document.getElementById('q-image-wrap'), img=document.getElementById('q-image'), qt=document.getElementById('q-text'); if(q.image){ img.src=q.image; imgWrap.style.display='block'; qt.textContent = q.imageReliant ? 'This question uses the image below. Translation modules should skip this item.' : getLocalizedQuestionText(q); } else { img.removeAttribute('src'); imgWrap.style.display='none'; qt.textContent=getLocalizedQuestionText(q); } document.getElementById('explanation').style.display='none'; document.getElementById('explanation').textContent=''; document.getElementById('ai-tutor-panel').style.display='none'; document.getElementById('tutor-toggle-btn').textContent=t('openTutor'); document.getElementById('chat-history').innerHTML=''; renderChoices(q); if(shouldAITranslateQuestion(q) && !q._translations?.es) applyQuestionTranslation(q, token); }
+function normalizeChoices(q){ if(q.image && q.correctAnswer && /^[A-D]$/i.test(q.correctAnswer)) return ['A','B','C','D'].map(l=>({letter:l,text:l,letterOnly:true})); const translatedChoices = shouldAITranslateQuestion(q) ? q._translations?.es?.choices : null; const c=translatedChoices || q.choices; if(!c || Object.keys(c).length===0) return []; if(Array.isArray(c)) return c.map((txt,i)=>({letter:String.fromCharCode(65+i),text:`${String.fromCharCode(65+i)}. ${txt}`})); return Object.entries(c).filter(([l,txt])=>txt!==null&&txt!==undefined&&String(txt).trim()!=='').map(([letter,text])=>({letter, text:`${letter}. ${stripChoicePrefix(letter,text)}`})); }
 function renderChoices(q){ const grid=document.getElementById('answers'); grid.innerHTML=''; const choices=normalizeChoices(q); if(q.answerType && q.answerType !== 'multiple_choice' && !/^[A-D]$/i.test(q.correctAnswer||'')){ grid.innerHTML=`<div class="free-response-row"><input id="free-response-input" placeholder="Enter answer"><button class="btn" onclick="submitFreeResponse()">Submit</button></div>`; return; } choices.forEach(ch=>{ const b=document.createElement('button'); b.className='answer-btn'+(ch.letterOnly?' letter-only':''); b.textContent=ch.text; b.onclick=()=>selectAnswer(ch.letter,q); grid.appendChild(b); }); }
 function submitFreeResponse(){ const input=document.getElementById('free-response-input'); const typed=normalizeTyped(input.value); selectAnswer(typed,questions[currentQ]); }
 function normalizeTyped(v){ return String(v||'').trim().toUpperCase().replace(/\s+/g,'').replace(/\.$/,''); }
-function selectAnswer(selected,q){ const elapsed=Math.max(1,Math.round((Date.now()-qStartTime)/1000)); const correct=normalizeTyped(q.correctAnswer||q.correct||''); const selectedNorm=normalizeTyped(selected); const ok=selectedNorm===correct; document.querySelectorAll('.answer-btn').forEach(b=>{ b.onclick=null; const l=normalizeTyped(b.textContent.charAt(0)); if(l===correct) b.classList.add('correct'); else if(l===selectedNorm) b.classList.add('incorrect'); }); answers[currentQ]={qid:q.id, selected:selectedNorm, correctAnswer:correct, correct:ok, section:q.section, domain:q.domain, skill:q.skill, difficulty:q.difficulty, timeSec:elapsed, confidence:null, mistake: ok?'None':classifyMistake(q)}; const exp=document.getElementById('explanation'); exp.style.display='block'; exp.textContent=(ok?'✓ Correct. ':'✗ Incorrect. ')+(q.rationale || localExplanation(q, ok)); document.getElementById('confidence-card').style.display='block'; document.getElementById('next-btn').disabled=true; }
+function selectAnswer(selected,q){ const elapsed=Math.max(1,Math.round((Date.now()-qStartTime)/1000)); const correct=normalizeTyped(q.correctAnswer||q.correct||''); const selectedNorm=normalizeTyped(selected); const ok=selectedNorm===correct; document.querySelectorAll('.answer-btn').forEach(b=>{ b.onclick=null; const l=normalizeTyped(b.textContent.charAt(0)); if(l===correct) b.classList.add('correct'); else if(l===selectedNorm) b.classList.add('incorrect'); }); answers[currentQ]={qid:q.id, selected:selectedNorm, correctAnswer:correct, correct:ok, section:q.section, domain:q.domain, skill:q.skill, difficulty:q.difficulty, timeSec:elapsed, confidence:null, mistake: ok?'None':classifyMistake(q)}; const exp=document.getElementById('explanation'); exp.style.display='block'; const prefix=(ok?'✓ Correct. ':'✗ Incorrect. '); exp.textContent=prefix+(getLocalizedRationale(q) || localExplanation(q, ok)); document.getElementById('confidence-card').style.display='block'; document.getElementById('next-btn').disabled=true; }
 function setConfidence(level){ selectedConfidence=level; if(answers[currentQ]) answers[currentQ].confidence=level; document.querySelectorAll('.confidence-btn').forEach(b=>b.classList.toggle('selected', b.textContent.toLowerCase().startsWith(level.toLowerCase()[0]) || b.textContent===level)); document.getElementById('next-btn').disabled=false; }
 function nextQuestion(){ if(answers[currentQ] && !answers[currentQ].confidence) answers[currentQ].confidence='Medium'; currentQ++; if(currentQ>=questions.length) showResults(); else loadQuestion(); }
 function localExplanation(q,ok){ if(ok) return 'Your answer matches the correct choice. Keep using evidence from the question instead of guessing.'; if(q.section==='Math') return 'Review the setup carefully, then check arithmetic and units. Many SAT Math misses come from using the right idea with one wrong computation.'; return 'Go back to the exact wording of the passage. Eliminate choices that are too broad, too narrow, or unsupported.'; }
