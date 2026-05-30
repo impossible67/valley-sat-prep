@@ -38,6 +38,32 @@
 .auth-helper{color:var(--muted);font-size:.84rem;margin:-2rem 0 1.35rem;line-height:1.55;}
 @media(max-width:720px){.home-hero.auth-mode{max-width:620px;padding-top:2.5rem}.home-hero.auth-mode h1{font-size:2rem}.home-hero.auth-mode .role-cards{grid-template-columns:1fr}.auth-title{margin-bottom:1.5rem}.auth-links{font-size:.9rem}.auth-helper{margin:-.75rem 0 1.25rem}}
 
+
+/* Landing page readability patch */
+.home-hero h1 {
+  color: var(--text);
+}
+
+.home-hero > p {
+  color: rgba(240,239,232,0.82);
+}
+
+.role-card {
+  color: var(--text);
+}
+
+.role-card .role-title {
+  color: var(--text);
+}
+
+.role-card .role-desc {
+  color: rgba(240,239,232,0.72);
+}
+
+.role-card .role-icon {
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.35));
+}
+
 </style>
 </head>
 <body>
