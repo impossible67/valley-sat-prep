@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valley SAT Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f11;
+  --surface: #18181c;
+  --surface2: #222228;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0efe8;
+  --muted: #888880;
+  --accent: #7ee8a2;
+  --accent2: #5bc4f5;
+  --warn: #f5a623;
+  --danger: #f55f5f;
+  --purple: #b59cf5;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 2.4rem; letter-spacing: -0.02em; }
+h2 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.6rem; letter-spacing: -0.01em; }
+h3 { font-size: 0.8rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.mono { font-family: 'DM Mono', monospace; }
+
+/* ── Layout ── */
+.page { display: none; min-height: 100vh; }
+.page.active { display: flex; flex-direction: column; }
+.container { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem; flex: 1; }
+.container.wide { max-width: 900px; }
+
+/* ── Home ── */
+.home-hero {
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 100vh; padding: 3rem 2rem; max-width: 540px; margin: 0 auto;
+}
+.badge {
+  display: inline-block; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; background: rgba(94,200,162,0.12); color: var(--accent);
+  border: 1px solid rgba(94,200,162,0.25); border-radius: 99px; padding: 4px 14px;
+  margin-bottom: 1.5rem;
+}
+.home-hero h1 { margin-bottom: 1rem; }
+.home-hero p { color: var(--muted); margin-bottom: 2.5rem; font-size: 1.05rem; }
+.role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+.role-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem 1.25rem; cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  text-align: left;
+}
+.role-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.role-card .role-icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
+.role-card .role-title { font-weight: 500; font-size: 1rem; margin-bottom: 0.25rem; }
+.role-card .role-desc { font-size: 0.82rem; color: var(--muted); }
+.class-input-wrap { display: flex; gap: 8px; }
+input[type="text"] {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.65rem 1rem; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 1rem; letter-spacing: 0.06em;
+  outline: none; transition: border-color 0.2s;
+}
+input[type="text"]:focus { border-color: var(--accent); }
+input[type="text"]::placeholder { color: var(--muted); letter-spacing: 0.02em; font-size: 0.9rem; }
+
+/* ── Buttons ── */
+.btn {
+  background: var(--accent); color: #0a1a10; border: none; border-radius: var(--radius-sm);
+  padding: 0.7rem 1.4rem; font-weight: 600; font-size: 0.9rem; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
+}
+.btn:hover { opacity: 0.88; }
+.btn:active { transform: scale(0.98); }
+.btn.secondary {
+  background: var(--surface2); color: var(--text); border: 1px solid var(--border2);
+}
+.btn.secondary:hover { background: var(--surface); border-color: var(--accent); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn.blue { background: var(--accent2); color: #071520; }
+.btn.purple { background: var(--purple); color: #100a20; }
+
+/* ── Nav ── */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+  background: rgba(15,15,17,0.92); backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 10;
+}
+.nav-brand { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.1rem; }
+.nav-class { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--muted); }
+
+/* ── Progress bar ── */
+.progress-wrap { margin-bottom: 1.5rem; }
+.progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.progress-track { height: 3px; background: var(--surface2); border-radius: 99px; }
+.progress-fill { height: 3px; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; }
+
+/* ── Question card ── */
+.q-section-tag {
+  display: inline-block; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; border-radius: 99px; padding: 3px 12px; margin-bottom: 1.25rem;
+}
+.tag-rw { background: rgba(91,196,245,0.12); color: var(--accent2); border: 1px solid rgba(91,196,245,0.2); }
+.tag-math { background: rgba(181,156,245,0.12); color: var(--purple); border: 1px solid rgba(181,156,245,0.2); }
+
+.passage-box {
+  background: var(--surface); border-left: 2px solid var(--border2);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.9rem 1.1rem; margin-bottom: 1.25rem;
+  font-size: 0.88rem; color: var(--muted); line-height: 1.7;
+}
+.q-text { font-size: 1.05rem; margin-bottom: 1.25rem; line-height: 1.65; }
+.q-image { width: 100%; max-width: 520px; border-radius: var(--radius-sm); margin-bottom: 1.25rem; border: 1px solid var(--border); background: #fff; display: block; }
+
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.answer-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.85rem 1rem;
+  font-size: 0.88rem; color: var(--text); cursor: pointer;
+  text-align: left; line-height: 1.5; transition: border-color 0.15s, background 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.answer-btn:hover { border-color: var(--border2); background: var(--surface2); }
+.answer-btn.selected { border-color: var(--accent2); background: rgba(91,196,245,0.06); }
+.answer-btn.correct { border-color: var(--accent); background: rgba(126,232,162,0.08); color: var(--accent); }
+.answer-btn.incorrect { border-color: var(--danger); background: rgba(245,95,95,0.07); color: var(--danger); }
+
+.explanation {
+  background: var(--surface2); border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem; font-size: 0.84rem; color: var(--muted);
+  line-height: 1.6; margin-bottom: 1rem; display: none;
+}
+
+/* ── AI Tutor Feedback Box ── */
+.tutor-box {
+  display: none;
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+  animation: tutor-slide-in 0.35s cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes tutor-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.tutor-box.tutor-correct {
+  background: rgba(126,232,162,0.06);
+  border: 1px solid rgba(126,232,162,0.2);
+}
+.tutor-box.tutor-incorrect {
+  background: rgba(245,95,95,0.05);
+  border: 1px solid rgba(245,95,95,0.18);
+}
+.tutor-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 0.6rem;
+}
+.tutor-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.tutor-label {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.tutor-correct .tutor-label { color: var(--accent); }
+.tutor-incorrect .tutor-label { color: var(--danger); }
+.tutor-spinner {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem; color: var(--muted);
+}
+.tutor-spinner .spinner {
+  width: 14px; height: 14px; border-width: 1.5px;
+  border-top-color: var(--purple);
+}
+.tutor-text {
+  font-size: 0.88rem; line-height: 1.65; color: var(--text);
+  white-space: pre-wrap;
+}
+.tutor-correct .tutor-text { color: rgba(240,239,232,0.88); }
+.tutor-incorrect .tutor-text { color: rgba(240,239,232,0.88); }
+.tutor-glow {
+  position: absolute; top: 0; right: 0; width: 80px; height: 80px;
+  border-radius: 50%; opacity: 0.08; pointer-events: none;
+  transform: translate(30%, -30%);
+}
+.tutor-correct .tutor-glow { background: var(--accent); }
+.tutor-incorrect .tutor-glow { background: var(--danger); }
+
+/* ── Loading ── */
+.loading {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 3rem; gap: 1rem; color: var(--muted); font-size: 0.88rem;
+}
+.spinner {
+  width: 28px; height: 28px; border: 2px solid var(--border2);
+  border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Results ── */
+.score-hero {
+  text-align: center; padding: 2.5rem 0 2rem;
+  border-bottom: 1px solid var(--border); margin-bottom: 2rem;
+}
+.score-big {
+  font-family: 'Fraunces', serif; font-weight: 600; font-size: 5rem;
+  line-height: 1; color: var(--accent); letter-spacing: -0.03em;
+}
+.score-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }
+.score-range { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+.sub-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 2rem; }
+.sub-score-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+}
+.sub-score-val { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 300; }
+.sub-score-lbl { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.rw-color { color: var(--accent2); }
+.math-color { color: var(--purple); }
+
+.gap-section { margin-bottom: 2rem; }
+.gap-item { margin-bottom: 1rem; }
+.gap-label-row { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 5px; }
+.gap-label { color: var(--text); }
+.gap-pct { font-family: 'DM Mono', monospace; color: var(--muted); }
+.gap-track { height: 6px; background: var(--surface2); border-radius: 99px; }
+.gap-bar { height: 6px; border-radius: 99px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+.bar-good { background: var(--accent); }
+.bar-ok { background: var(--warn); }
+.bar-low { background: var(--danger); }
+
+.priority-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+.priority-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 1rem 1.1rem;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.pnum {
+  width: 22px; height: 22px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 0.72rem;
+  font-weight: 600; flex-shrink: 0; margin-top: 1px;
+}
+.pnum-1 { background: rgba(245,95,95,0.15); color: var(--danger); }
+.pnum-2 { background: rgba(245,166,35,0.15); color: var(--warn); }
+.pnum-3 { background: rgba(126,232,162,0.15); color: var(--accent); }
+.priority-name { font-size: 0.9rem; font-weight: 500; margin-bottom: 2px; }
+.priority-tip { font-size: 0.8rem; color: var(--muted); }
+
+/* ── Teacher Dashboard ── */
+.dash-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+}
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 2rem; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+}
+.stat-val { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 300; margin-bottom: 2px; }
+.stat-lbl { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.heatmap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem;
+}
+.heatmap-title { font-size: 0.78rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.25rem; }
+.heatmap-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.heatmap-label { font-size: 0.8rem; color: var(--muted); width: 200px; flex-shrink: 0; }
+.heatmap-bar-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+.heatmap-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 99px; }
+.heatmap-fill { height: 8px; border-radius: 99px; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+.heatmap-count { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); min-width: 32px; text-align: right; }
+
+.ai-panel {
+  background: var(--surface); border: 1px solid rgba(181,156,245,0.2);
+  border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem;
+}
+.ai-panel-header { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+.ai-dot { width: 8px; height: 8px; background: var(--purple); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.ai-text { font-size: 0.88rem; color: var(--muted); line-height: 1.7; white-space: pre-wrap; }
+
+.student-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+.student-table th {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--muted); padding: 0.6rem 0.75rem; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.student-table td {
+  padding: 0.7rem 0.75rem; font-size: 0.85rem;
+  border-bottom: 1px solid var(--border); color: var(--text);
+}
+.student-table tr:last-child td { border-bottom: none; }
+.score-pill {
+  font-family: 'DM Mono', monospace; font-size: 0.78rem; font-weight: 500;
+  padding: 3px 10px; border-radius: 99px;
+}
+.pill-high { background: rgba(126,232,162,0.12); color: var(--accent); }
+.pill-mid  { background: rgba(245,166,35,0.12); color: var(--warn); }
+.pill-low  { background: rgba(245,95,95,0.12); color: var(--danger); }
+
+.refresh-bar {
+  display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--muted);
+}
+.live-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s infinite; }
+
+/* ── Join code display ── */
+.code-display {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); padding: 0.6rem 1rem;
+  font-family: 'DM Mono', monospace; font-size: 1.3rem; letter-spacing: 0.15em;
+  color: var(--accent); display: inline-block;
+}
+
+/* ── Misc ── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+.empty-state {
+  text-align: center; padding: 3rem; color: var(--muted);
+  border: 1px dashed var(--border2); border-radius: var(--radius); margin-bottom: 2rem;
+}
+.empty-state p { font-size: 0.88rem; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="home-hero">
+    <div class="badge">Hack the Valley · CSUB 2026</div>
+    <h1>Valley SAT Prep</h1>
+    <p>AI-powered diagnostics for Central Valley classrooms. Students get personal gap analysis. Teachers get class-wide insights.</p>
+    <div class="role-cards">
+      <div class="role-card" onclick="showRoleInput('student')">
+        <div class="role-icon">✏️</div>
+        <div class="role-title">I'm a student</div>
+        <div class="role-desc">Take the diagnostic, see your gaps</div>
+      </div>
+      <div class="role-card" onclick="showRoleInput('teacher')">
+        <div class="role-icon">📊</div>
+        <div class="role-title">I'm a teacher</div>
+        <div class="role-desc">See your class dashboard</div>
+      </div>
+    </div>
+    <div id="role-input-area"></div>
+  </div>
+</div>
+
+<!-- STUDENT DIAGNOSTIC -->
+<div class="page" id="page-student">
+  <nav>
+    <span class="nav-brand">Valley SAT Prep</span>
+    <span class="nav-class mono" id="student-class-label"></span>
+  </nav>
+  <div class="container">
+    <!-- Name entry -->
+    <div id="student-name-screen">
+      <br>
+      <h2>Before we start</h2>
+      <p style="color:var(--muted);margin:0.75rem 0 1.5rem">Your results go to your teacher's class dashboard anonymously — they see trends, not individual answers.</p>
+      <input type="text" id="student-name-input" placeholder="Your first name (shown on dashboard)" style="width:100%;margin-bottom:12px">
+      <button class="btn" onclick="startDiagnostic()">Start diagnostic →</button>
+    </div>
+    <!-- Questions -->
+    <div id="student-q-screen" style="display:none">
+      <div class="progress-wrap">
+        <div class="progress-top">
+          <span id="q-counter" style="font-size:0.8rem;color:var(--muted)">Question 1 of 10</span>
+          <span id="q-section-tag" class="q-section-tag tag-rw">Reading & Writing</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="prog" style="width:10%"></div></div>
+      </div>
+      <div id="q-loading" class="loading"><div class="spinner"></div><span>Loading question…</span></div>
+      <div id="q-content" style="display:none">
+        <div class="passage-box" id="q-passage" style="display:none"></div>
+        <p class="q-text" id="q-text"></p>
+        <img class="q-image" id="q-image" style="display:none" alt="Question diagram">
+        <div class="answers" id="answers"></div>
+        <div class="explanation" id="explanation"></div>
+        <!-- AI Tutor Feedback Box -->
+        <div class="tutor-box" id="tutor-box">
+          <div class="tutor-glow"></div>
+          <div class="tutor-header">
+            <span class="tutor-icon" id="tutor-icon">🤖</span>
+            <span class="tutor-label" id="tutor-label">Tutor</span>
+          </div>
+          <div class="tutor-spinner" id="tutor-spinner">
+            <div class="spinner" style="border-top-color:var(--purple)"></div>
+            <span>Thinking…</span>
+          </div>
+          <div class="tutor-text" id="tutor-text" style="display:none"></div>
+        </div>
+        <button class="btn secondary" id="next-btn" disabled onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+    <!-- Results -->
+    <div id="student-results" style="display:none">
+      <div class="score-hero">
+        <div class="score-big" id="r-total">—</div>
+        <div class="score-label">predicted SAT score</div>
+        <div class="score-range" id="r-range"></div>
+      </div>
+      <div class="sub-scores">
+        <div class="sub-score-card"><div class="sub-score-val rw-color" id="r-rw">—</div><div class="sub-score-lbl">Reading & Writing</div></div>
+        <div class="sub-score-card"><div class="sub-score-val math-color" id="r-math">—</div><div class="sub-score-lbl">Math</div></div>
+      </div>
+      <h3>Your gap analysis</h3>
+      <div class="gap-section" id="r-gaps" style="margin-top:1rem"></div>
+      <h3>Top priorities</h3>
+      <div class="priority-list" id="r-priorities" style="margin-top:1rem"></div>
+      <button class="btn blue" onclick="goHome()" style="width:100%">Done — go back home</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER DASHBOARD -->
+<div class="page" id="page-teacher">
+  <nav>
+    <span class="nav-brand">Teacher Dashboard</span>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="refresh-bar"><span class="live-dot"></span>Live updates</span>
+      <button class="btn secondary" onclick="goHome()" style="padding:0.4rem 0.9rem;font-size:0.8rem">← Home</button>
+    </div>
+  </nav>
+  <div class="container wide">
+    <br>
+    <div class="dash-header">
+      <div>
+        <h2 id="dash-class-title">Class —</h2>
+        <div style="margin-top:0.4rem;font-size:0.85rem;color:var(--muted)">
+          Share code with students: <span class="code-display" id="dash-code">—</span>
+        </div>
+      </div>
+      <button class="btn" onclick="loadDashboard()">Refresh</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" id="d-students">0</div><div class="stat-lbl">Students completed</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-avg">—</div><div class="stat-lbl">Class avg score</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-lowest">—</div><div class="stat-lbl">Biggest gap area</div></div>
+    </div>
+
+    <div id="empty-dash" class="empty-state">
+      <div style="font-size:1.8rem">📭</div>
+      <p>No students have completed the diagnostic yet.<br>Share the class code above and have them go to this page.</p>
+    </div>
+
+    <div id="dash-content" style="display:none">
+      <div class="heatmap">
+        <div class="heatmap-title">Class performance by subsection — red = needs attention</div>
+        <div id="heatmap-rows"></div>
+      </div>
+
+      <div class="ai-panel">
+        <div class="ai-panel-header">
+          <div class="ai-dot"></div>
+          <h3 style="margin:0;letter-spacing:0.06em">AI teaching recommendations</h3>
+          <button class="btn purple" onclick="getAIRecs()" id="ai-btn" style="margin-left:auto;padding:0.4rem 1rem;font-size:0.78rem">Generate →</button>
+        </div>
+        <div class="ai-text" id="ai-text" style="color:var(--muted);font-size:0.82rem;font-style:italic">Click "Generate" to get AI-powered lesson recommendations based on your class gaps.</div>
+      </div>
+
+      <h3>Individual student results</h3>
+      <table class="student-table" style="margin-top:1rem">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Total</th>
+            <th>R&amp;W</th>
+            <th>Math</th>
+            <th>Biggest gap</th>
+            <th>Completed</th>
+          </tr>
+        </thead>
+        <tbody id="student-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
+const SUBSECTIONS = {
+  rw: ['Information and Ideas','Craft and Structure','Expression of Ideas','Standard English Conventions'],
+  math: ['Algebra','Advanced Math','Problem Solving & Data','Geometry & Trigonometry']
+};
+
+// ── Embedded Question Bank ──
+const QUESTION_BANK = [{"id":"d73a908a","test":"Reading and Writing","domain":"Information and Ideas","skill":"Central Ideas and Details","difficulty":"Medium","question":"Believing that living in an impractical space can heighten awareness and even improve health, conceptual artists Madeline Gins and Shusaku\nArakawa designed an apartment building in Japan to be more fanciful than functional. A kitchen counter is chest-high on one side and knee-high\non the other; a ceiling has a door to nowhere. The effect is disorienting but invigorating: after four years there, filmmaker Nobu Yamaoka reported\nsignificant health benefits.\nWhich choice best states the main idea of the text?","choices":{"A":"Although inhabiting a home surrounded by fanciful features such as those designed by Gins and Arakawa can be rejuvenating, it is\nunsustainable.","B":"Designing disorienting spaces like those in the Gins and Arakawa building is the most effective way to create a physically stimulating\nenvironment.","C":"As a filmmaker, Yamaoka has long supported the designs of conceptual artists such as Gins and Arakawa.","D":"Although impractical, the design of the apartment building by Gins and Arakawa may improve the well-being of the building\u2019s residents."},"correctAnswer":"D","rationale":"Choice D is the best answer because it most accurately states the main idea of the text. The text says Gins and Arakawa designed a disorienting apartment, and filmmaker Yamaoka reported health benefits after living there four years, suggesting impractical design may improve well-being.\nChoice A is incorrect because sustainability is never addressed. Choice B is incorrect because the text never calls this the most effective method. Choice C is incorrect because Yamaoka is referenced only as evidence, not as a supporter of other artists.","image":null},{"id":"ed314256","test":"Reading and Writing","domain":"Information and Ideas","skill":"Central Ideas and Details","difficulty":"Hard","question":"The most recent iteration of the immersive theater experience Sleep No More, which premiered in New York City in 2011, transforms its\nperformance space\u2014a five-story warehouse\u2014into a 1930s-era hotel. Audience members, who wander through the labyrinthine venue at their own\npace and follow the actors as they play out simultaneous, interweaving narrative loops, confront the impossibility of experiencing the production\nin its entirety. The play\u2019s refusal of narrative coherence thus hinges on the sense of spatial fragmentation that the venue\u2019s immense and intricate\nlayout generates.\nWhat does the text most strongly suggest about Sleep No More\u2019s use of its performance space?","choices":{"A":"The choice of a New York City venue likely enabled the play\u2019s creators to experiment with the use of theatrical space in a way that venues from\nearlier productions could not.","B":"Audience members likely find the experience of the play disappointing because they generally cannot make their way through the entire venue.","C":"The production\u2019s dependence on a particular performance environment would likely make it difficult to reproduce exactly in a different\ntheatrical space.","D":"Audience members who navigate the space according to a recommended itinerary will likely have a better grasp of the play\u2019s narrative than\naudience members who depart from that itinerary."},"correctAnswer":"C","rationale":"Choice C is the best answer. The text says the production's use of its large, winding space has a very specific effect on the audience, making it difficult to reproduce elsewhere.\nChoice A is incorrect — the city location isn't connected to the experimental nature. Choice B is incorrect — the text suggests incompleteness is part of the experience. Choice D is incorrect — no recommended itinerary is mentioned.","image":null},{"id":"8c1be131","test":"Reading and Writing","domain":"Information and Ideas","skill":"Central Ideas and Details","difficulty":"Medium","question":"During the World War II era, some Mexican American women adopted a striking new look called pachuca style. They wore altered men\u2019s jackets\nor zoot suits (wide-legged, long-coated suits) and dramatic makeup, and they combed their hair into high, rounded shapes. Some people\ncriticized pachuca style, saying it was dangerous and women should dress traditionally. But historians see things differently. They see pachuca\nstyle as a form of rebellion against the era\u2019s rigid social expectations for women. They say that it showed a desire for self-expression and\nfreedom on the part of women who adopted the style.\nAccording to the text, how do historians view pachuca style?","choices":{"A":"They think that pachuca style was such a popular trend that it continues to influence fashion in the United States to the present day.","B":"They think that pachuca style was a way for some Mexican American women to express themselves and resist strict social expectations.","C":"They think that pachuca style was celebrated because it enabled some Mexican American women to show their support for the United States\nduring World War II.","D":"They think that pachuca style was similar to other fashion trends that different groups of women adopted in the same period."},"correctAnswer":"B","rationale":"Choice B is correct — historians view pachuca style as a form of rebellion showing desire for freedom and self-expression.\nChoice A is incorrect because the text doesn't mention present-day influence. Choice C is incorrect because the text says it was rebellion, not patriotism. Choice D is incorrect because no comparison to other trends is made.","image":null},{"id":"22e4d633","test":"Reading and Writing","domain":"Information and Ideas","skill":"Command of Evidence","difficulty":"Medium","question":"Although many transposons, DNA sequences that move within an organism\u2019s genome through shuffling or duplication, have become corrupted\nand inactive over time, those from the long interspersed nuclear elements (LINE) family appear to remain active in the genomes of some\nspecies. In humans, they are functionally important within the hippocampus, a brain structure that supports complex cognitive processes. When\nthe results of molecular analysis of two species of octopus\u2014an animal known for its intelligence\u2014were announced in 2022, the confirmation of a\nLINE transposon in Octopus vulgaris and Octopus bimaculoides genomes prompted researchers to hypothesize that that transposon family is tied\nto a species\u2019 capacity for advanced cognition.\nWhich finding, if true, would most directly support the researchers\u2019 hypothesis?","choices":{"A":"The LINE transposon in O. vulgaris and O. bimaculoides genomes is active in an octopus brain structure that functions similarly to the human\nhippocampus.","B":"The human genome contains multiple transposons from the LINE family that are all primarily active in the hippocampus.","C":"A consistent number of copies of LINE transposons is present across the genomes of most octopus species, with few known corruptions.","D":"O. vulgaris and O. bimaculoides have smaller brains than humans do relative to body size, but their genomes contain sequences from a wider\nvariety of transposon families."},"correctAnswer":"A","rationale":"Choice A is correct — if LINE transposons are active in an octopus brain structure similar to the human hippocampus, that directly supports the hypothesis linking LINE to advanced cognition.\nChoice B doesn't address other species. Choice C doesn't address cognition. Choice D doesn't connect LINE transposons to cognition.","image":null},{"id":"3543e6e2","test":"Reading and Writing","domain":"Information and Ideas","skill":"Central Ideas and Details","difficulty":"Easy","question":"The following text is from Jane Austen\u2019s 1811 novel Sense and Sensibility. Elinor lives with her younger sisters and her mother, Mrs. Dashwood.\nElinor, this eldest daughter, whose advice was so effectual, possessed a strength of understanding, and coolness of judgment, which qualified\nher, though only nineteen, to be the counsellor of her mother, and enabled her frequently to counteract, to the advantage of them all, that\neagerness of mind in Mrs. Dashwood which must generally have led to imprudence. She had an excellent heart;\u2014her disposition was\naffectionate, and her feelings were strong; but she knew how to govern them: it was a knowledge which her mother had yet to learn; and which\none of her sisters had resolved never to be taught.\nAccording to the text, what is true about Elinor?","choices":{"A":"Elinor often argues with her mother but fails to change her mind.","B":"Elinor can be overly sensitive with regard to family matters.","C":"Elinor thinks her mother is a bad role model.","D":"Elinor is remarkably mature for her age."},"correctAnswer":"D","rationale":"Choice D is correct — at only nineteen she counsels her mother, showing remarkable maturity for her age.\nChoice A is incorrect — she counteracts her mother's impulses, not argues and fails. Choice B is incorrect — she governs her feelings well. Choice C is incorrect — there's no mention of Elinor thinking poorly of her mother.","image":null},{"id":"29f5c8c2","test":"Reading and Writing","domain":"Information and Ideas","skill":"Command of Evidence","difficulty":"Medium","question":"Fish whose DNA has been modified to include genetic material from other species are known as transgenic. Some transgenic fish have genes\nfrom jellyfish that result in fluorescence (that is, they glow in the dark). Although these fish were initially engineered for research purposes in the\n1990s, they were sold as pets in the 2000s and can now be found in the wild in creeks in Brazil. A student in a biology seminar who is writing a\npaper on these fish asserts that their escape from Brazilian fish farms into the wild may have significant negative long-term ecological effects.\nWhich quotation from a researcher would best support the student\u2019s assertion?","choices":{"A":"\u201cIn one site in the wild where transgenic fish were observed, females outnumbered males, while in another the numbers of females and males\nwere equivalent.\u201d","B":"\u201cThough some presence of transgenic fish in the wild has been recorded, there are insufficient studies of the impact of those fish on the\necosystems into which they are introduced.\u201d","C":"\u201cThe ecosystems into which transgenic fish are known to have been introduced may represent a subset of the ecosystems into which the fish\nhave actually been introduced.\u201d","D":"\u201cThrough interbreeding, transgenic fish might introduce the trait of fluorescence into wild fish populations, making those populations more\nvulnerable to predators.\u201d"},"correctAnswer":"D","rationale":"Choice D is correct — interbreeding introducing fluorescence into wild populations making them vulnerable to predators directly supports the claim of significant negative ecological effects.\nChoice A only reports sex ratios. Choice B calls for more research but doesn't confirm negative effects. Choice C addresses distribution not harm.","image":null},{"id":"ca5a3fb4","test":"Reading and Writing","domain":"Information and Ideas","skill":"Inferences","difficulty":"Medium","question":"The practice of logging (cutting down trees for commercial and other uses) is often thought to be at odds with forest conservation (the work of\npreserving forests). However, a massive study in forest management and preservation spanning 700,000 hectares in Oregon\u2019s Malheur National\nForest calls that view into question. So far, results of the study suggest that forest plots that have undergone limited logging (the careful removal\nof a controlled number of trees) may be more robust than plots that haven\u2019t been logged at all. These results, in turn, suggest that ______\nWhich choice most logically completes the text?","choices":{"A":"logging may be useful for maintaining healthy forests, provided it is limited.","B":"other forest management strategies are more effective than limited logging.","C":"as time passes, it will be difficult to know whether limited logging has any benefits.","D":"the best way to support forest health may be to leave large forests entirely untouched."},"correctAnswer":"A","rationale":"Choice A is correct — limited logging making plots more robust logically suggests that limited logging may be useful for forest health.\nChoice B is unsupported — no other strategies are compared. Choice C contradicts the study findings. Choice D contradicts what the study found.","image":null},{"id":"cf956802","test":"Reading and Writing","domain":"Information and Ideas","skill":"Central Ideas and Details","difficulty":"Easy","question":"When fashion designer Lloyd Henri Kiva New opened his store in Scottsdale, Arizona, in 1945, he quickly became known for creating delicately\ncrafted leather goods, like belts and hats. He was perhaps most renowned for his colorful handbags, which he made by hand using a long and\npainstaking process. As he gained more customers, New began using sewing machines and other tools to help him produce bags more\nefficiently, though he continued to handcraft the crucial details that made each bag unique.\nBased on the text, what would have been the most likely consequence if New had not begun using sewing machines?","choices":{"A":"He would have been unable to ensure that each bag included unique, handcrafted details.","B":"He would have struggled to meet the increasing demand for his bags.","C":"He would have had to individually design each bag he produced.","D":"He would not have been able to generate as much interest in his bags."},"correctAnswer":"B","rationale":"Choice B is correct — sewing machines let him produce more efficiently as customers grew; without them, meeting demand would have been difficult.\nChoice A is incorrect — he was already handcrafting details before machines. Choice C is incorrect — designing each bag individually was already happening. Choice D is incorrect — interest had already grown before machines.","image":null},{"id":"3091f805","test":"Reading and Writing","domain":"Information and Ideas","skill":"Command of Evidence","difficulty":"Easy","question":"Ochre sea stars live in tidal pools along the shoreline of the Pacific Ocean. At night, they move to higher shore levels in search of prey. But\nscientists Corey Garza and Carlos Robles noticed that ochre sea stars stayed at lower levels at night after heavy rains. Garza and Robles\nhypothesized that a layer of fresh water formed by rainfall was a barrier to the sea stars. To test their hypothesis, the scientists did an\nexperiment. They placed some sea stars in a climbable tank of seawater and other sea stars in a similar tank of seawater with a layer of fresh\nwater on top. Then, the scientists watched the sea stars\u2019 behavior at night.\nWhich finding from the experiment, if true, would most directly support Garza and Robles\u2019s hypothesis?","choices":{"A":"None of the sea stars climbed to the tops of the tanks, but sea stars in the tank with only seawater moved around the bottom of the tank more\nthan sea stars in the other tank did.","B":"Sea stars in the tank with only seawater climbed to the top of the tank, but sea stars in the other tank stopped climbing just below the layer of\nfresh water.","C":"Both groups of sea stars climbed to the tops of the tanks, but sea stars in the tank with only seawater climbed more slowly than sea stars in\nthe other tank did.","D":"Sea stars in the tank with only seawater mostly stayed near the bottom of the tank, but sea stars in the other tank climbed into the layer of\nfresh water."},"correctAnswer":"B","rationale":"Choice B is correct — sea stars stopping just below the fresh water layer directly shows fresh water acts as a barrier, supporting the hypothesis.\nChoice A reveals nothing about barriers. Choice C would weaken the hypothesis. Choice D would contradict the hypothesis.","image":null},{"id":"a68fd3e7","test":"Reading and Writing","domain":"Information and Ideas","skill":"Inferences","difficulty":"Hard","question":"Many of William Shakespeare\u2019s tragedies address broad themes that still appeal to today\u2019s audiences. For instance, Romeo and Juliet, which is\nset in the Italy of Shakespeare\u2019s time, tackles the themes of parents versus children and love versus hate, and the play continues to be read and\nproduced widely around the world. But understanding Shakespeare\u2019s so-called history plays can require a knowledge of several centuries of\nEnglish history. Consequently, ______\nWhich choice most logically completes the text?","choices":{"A":"many theatergoers and readers today are likely to find Shakespeare\u2019s history plays less engaging than the tragedies.","B":"some of Shakespeare\u2019s tragedies are more relevant to today\u2019s audiences than twentieth-century plays.","C":"Romeo and Juliet is the most thematically accessible of all Shakespeare\u2019s tragedies.","D":"experts in English history tend to prefer Shakespeare\u2019s history plays to his other works."},"correctAnswer":"A","rationale":"Choice A is correct — history plays requiring deep knowledge of English history logically leads to modern audiences finding them less engaging than accessible tragedies.\nChoice B introduces twentieth-century plays, not mentioned. Choice C overstates — not all tragedies are compared. Choice D introduces historians, not mentioned.","image":null},{"id":"84b5125b","test":"Reading and Writing","domain":"Craft and Structure","skill":"Words in Context","difficulty":"Easy","question":"Artist Marilyn Dingle\u2019s intricate, coiled baskets are ______ sweetgrass and palmetto palm. Following a Gullah technique that originated in West\nAfrica, Dingle skillfully winds a thin palm frond around a bunch of sweetgrass with the help of a \u201csewing bone\u201d to create the basket\u2019s signature\nlook that no factory can reproduce.\nWhich choice completes the text with the most logical and precise word or phrase?","choices":{"A":"indicated by","B":"handmade from","C":"represented by","D":"collected with"},"correctAnswer":"B","rationale":"Choice B is correct — the context describes Dingle skillfully winding palm around sweetgrass by hand to create baskets no factory can replicate, meaning the baskets are handmade from these materials.\nChoice A (indicated by) means signified by, which doesn't fit. Choice C (represented by) means exemplified by, which doesn't fit the physical creation. Choice D (collected with) makes no sense here.","image":null},{"id":"fa014d2d","test":"Reading and Writing","domain":"Craft and Structure","skill":"Words in Context","difficulty":"Easy","question":"The invention in 1958 of the integrated circuit (or microchip) radically altered the semiconductor industry. In fact, some historians argue that it\nfundamentally ______ the industry by enabling it to take advantage of mass production methods for the first time.\nWhich choice completes the text with the most logical and precise word or phrase?","choices":{"A":"overwhelmed","B":"bypassed","C":"obstructed","D":"transformed"},"correctAnswer":"D","rationale":"Choice D is correct — the integrated circuit radically altered and fundamentally changed the industry, enabling mass production for the first time. 'Transformed' means substantially changed, which fits perfectly.\nChoice A (overwhelmed) implies the industry struggled or was defeated — the opposite of what happened. Choice B (bypassed) means avoided, which contradicts the direct impact described. Choice C (obstructed) means blocked, but the effect was positive.","image":null},{"id":"f224df07","test":"Math","domain":"Algebra","skill":"Linear inequalities in one or two variables","difficulty":"Medium","question":"A cargo helicopter delivers only 100-pound packages and 120-pound packages. For each delivery trip, the helicopter must carry at least 10\npackages, and the total weight of the packages can be at most 1,100 pounds. What is the maximum number of 120-pound packages that the\nhelicopter can carry per trip?","choices":{"A":"2","B":"4","C":"5","D":"6"},"correctAnswer":"C","rationale":"Choice C is correct. Let a = 120-lb packages, b = 100-lb packages. Constraints: 120a + 100b ≤ 1100 and a + b ≥ 10. To maximize a, minimize b. Minimum b = 10 - a. Substituting: 120a + 100(10-a) ≤ 1100 → 120a + 1000 - 100a ≤ 1100 → 20a ≤ 100 → a ≤ 5. Maximum is 5.\nChoices A, B, and D result from errors in setting up or solving the system of inequalities.","image":"question-images/f224df07.png"},{"id":"2937ef4f","test":"Math","domain":"Algebra","skill":"Linear equations in one variable","difficulty":"Hard","question":"Hector used a tool called an auger to remove corn from a storage bin at a constant rate. The bin contained 24,000 bushels of corn when Hector\nbegan to use the auger. After 5 hours of using the auger, 19,350 bushels of corn remained in the bin. If the auger continues to remove corn at this\nrate, what is the total number of hours Hector will have been using the auger when 12,840 bushels of corn remain in the bin?","choices":{"A":"3","B":"7","C":"8","D":"12"},"correctAnswer":"D","rationale":"Choice D is correct. The rate is (24000 - 19350) / 5 = 930 bushels/hour. Equation: 24000 - 930x = 12840. Solving: 930x = 11160, x = 12 hours.\nChoice A: after 3 hours, 21,210 remain — not 12,840. Choice B: after 7 hours, 17,490 remain. Choice C: after 8 hours, 16,560 remain.","image":"question-images/2937ef4f.png"}];
+
+// ── Q Plan: pick 10 questions from the bank ──
+const Q_PLAN_IDS = [
+  'd73a908a','8c1be131','84b5125b','ca5a3fb4',
+  '3543e6e2','fa014d2d','29f5c8c2','3091f805',
+  'f224df07','2937ef4f'
+];
+
+const qMap = {};
+QUESTION_BANK.forEach(q => qMap[q.id] = q);
+
+let currentRole = null;
+let classCode = '';
+let studentName = '';
+let currentQ = 0;
+let questions = [];
+let answers = [];
+
+// ── Navigation ──
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  currentQ = 0; questions = []; answers = [];
+  document.getElementById('student-name-screen').style.display = 'block';
+  document.getElementById('student-q-screen').style.display = 'none';
+  document.getElementById('student-results').style.display = 'none';
+  document.getElementById('role-input-area').innerHTML = '';
+  showPage('page-home');
+}
+
+function showRoleInput(role) {
+  currentRole = role;
+  const area = document.getElementById('role-input-area');
+  if (role === 'student') {
+    area.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:0.5rem">
+        <p style="font-size:0.85rem;color:var(--muted)">Enter your class code from your teacher:</p>
+        <div class="class-input-wrap">
+          <input type="text" id="home-code" placeholder="e.g. CSUB01" maxlength="8" style="text-transform:uppercase">
+          <button class="btn" onclick="joinAsStudent()">Join →</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--muted)">Or <a href="?role=student&class=DEMO01" style="color:var(--accent)">use the demo class</a></p>
+      </div>`;
+  } else {
+    const newCode = Math.random().toString(36).substring(2,8).toUpperCase();
+    area.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:0.5rem">
+        <p style="font-size:0.85rem;color:var(--muted)">Enter an existing class code or create new:</p>
+        <div class="class-input-wrap">
+          <input type="text" id="home-code" placeholder="${newCode}" maxlength="8" style="text-transform:uppercase">
+          <button class="btn blue" onclick="joinAsTeacher()">Open dashboard →</button>
+        </div>
+        <button class="btn secondary" onclick="joinAsTeacherNew('${newCode}')" style="font-size:0.82rem">Create new class (${newCode})</button>
+      </div>`;
+  }
+}
+
+function joinAsStudent() {
+  const code = (document.getElementById('home-code').value || '').toUpperCase().trim();
+  if (!code) { alert('Enter a class code'); return; }
+  classCode = code;
+  document.getElementById('student-class-label').textContent = code;
+  showPage('page-student');
+}
+
+function joinAsTeacher() {
+  const code = (document.getElementById('home-code').value || document.getElementById('home-code').placeholder || '').toUpperCase().trim();
+  if (!code) { alert('Enter a class code'); return; }
+  classCode = code;
+  openTeacherDash();
+}
+
+function joinAsTeacherNew(code) {
+  classCode = code;
+  openTeacherDash();
+}
+
+function openTeacherDash() {
+  document.getElementById('dash-class-title').textContent = 'Class ' + classCode;
+  document.getElementById('dash-code').textContent = classCode;
+  showPage('page-teacher');
+  loadDashboard();
+  setInterval(loadDashboard, 10000);
+}
+
+function handleURLParams() {
+  const p = new URLSearchParams(location.search);
+  if (p.get('role') === 'student' && p.get('class')) {
+    classCode = p.get('class').toUpperCase();
+    document.getElementById('student-class-label').textContent = classCode;
+    showPage('page-student');
+  } else if (p.get('role') === 'teacher' && p.get('class')) {
+    classCode = p.get('class').toUpperCase();
+    openTeacherDash();
+  }
+}
+
+// ── Student Diagnostic ──
+function startDiagnostic() {
+  const name = document.getElementById('student-name-input').value.trim();
+  if (!name) { alert('Please enter your name'); return; }
+  studentName = name;
+  document.getElementById('student-name-screen').style.display = 'none';
+  document.getElementById('student-q-screen').style.display = 'block';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const qId = Q_PLAN_IDS[currentQ];
+  const q = qMap[qId];
+  if (!q) { nextQuestion(); return; }
+
+  const isRW = q.test === 'Reading and Writing';
+  const sectionLabel = isRW ? 'Reading & Writing' : 'Math';
+  const tagClass = isRW ? 'tag-rw' : 'tag-math';
+
+  document.getElementById('q-counter').textContent = `Question ${currentQ+1} of ${Q_PLAN_IDS.length}`;
+  const tag = document.getElementById('q-section-tag');
+  tag.textContent = sectionLabel;
+  tag.className = `q-section-tag ${tagClass}`;
+  document.getElementById('prog').style.width = `${((currentQ+1)/Q_PLAN_IDS.length)*100}%`;
+  document.getElementById('q-loading').style.display = 'flex';
+  document.getElementById('q-content').style.display = 'none';
+
+  questions[currentQ] = q;
+  setTimeout(() => renderQuestion(q), 200);
+}
+
+function renderQuestion(q) {
+  document.getElementById('q-loading').style.display = 'none';
+  document.getElementById('q-content').style.display = 'block';
+  document.getElementById('explanation').style.display = 'none';
+
+  // Hide tutor box
+  const tutorBox = document.getElementById('tutor-box');
+  tutorBox.style.display = 'none';
+  tutorBox.className = 'tutor-box';
+
+  document.getElementById('next-btn').disabled = true;
+
+  // Passage: for RW questions, the question text itself contains the passage + question
+  const passEl = document.getElementById('q-passage');
+  passEl.style.display = 'none';
+
+  const qText = document.getElementById('q-text');
+  qText.textContent = q.question;
+
+  // Image
+  const imgEl = document.getElementById('q-image');
+  if (q.image) {
+    imgEl.src = q.image;
+    imgEl.style.display = 'block';
+    imgEl.onerror = () => { imgEl.style.display = 'none'; };
+  } else {
+    imgEl.style.display = 'none';
+  }
+
+  const grid = document.getElementById('answers');
+  grid.innerHTML = '';
+  ['A','B','C','D'].forEach(letter => {
+    const text = q.choices[letter] || '';
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.innerHTML = `<strong>${letter}.</strong> ${text ? text : '<em style="color:var(--muted);font-style:italic">See image above</em>'}`;
+    btn.onclick = () => selectAnswer(letter, q);
+    grid.appendChild(btn);
+  });
+}
+
+function selectAnswer(chosen, q) {
+  document.querySelectorAll('.answer-btn').forEach(b => b.onclick = null);
+  const correct = q.correctAnswer;
+
+  document.querySelectorAll('.answer-btn').forEach((b, i) => {
+    const letter = ['A','B','C','D'][i];
+    if (letter === correct) b.classList.add('correct');
+    else if (letter === chosen && chosen !== correct) b.classList.add('incorrect');
+  });
+
+  const ok = chosen === correct;
+  answers[currentQ] = {
+    correct: ok,
+    section: q.test === 'Reading and Writing' ? 'rw' : 'math',
+    sub: q.domain
+  };
+
+  const expEl = document.getElementById('explanation');
+  expEl.textContent = (ok ? '✓ Correct. ' : '✗ Incorrect. ') + q.rationale;
+  expEl.style.display = 'block';
+
+  document.getElementById('next-btn').disabled = false;
+
+  // Fire AI tutor feedback
+  showTutorFeedback(ok, chosen, correct, q);
+}
+
+async function showTutorFeedback(isCorrect, chosenLetter, correctLetter, q) {
+  const tutorBox = document.getElementById('tutor-box');
+  const tutorLabel = document.getElementById('tutor-label');
+  const tutorIcon = document.getElementById('tutor-icon');
+  const tutorSpinner = document.getElementById('tutor-spinner');
+  const tutorText = document.getElementById('tutor-text');
+
+  tutorBox.style.display = 'block';
+  tutorBox.className = `tutor-box ${isCorrect ? 'tutor-correct' : 'tutor-incorrect'}`;
+  tutorLabel.textContent = isCorrect ? 'Great work!' : 'Tutor Feedback';
+  tutorIcon.textContent = isCorrect ? '🌟' : '💡';
+  tutorSpinner.style.display = 'flex';
+  tutorText.style.display = 'none';
+  tutorText.textContent = '';
+
+  const chosenText = q.choices[chosenLetter] || `Choice ${chosenLetter} (see image)`;
+  const correctText = q.choices[correctLetter] || `Choice ${correctLetter} (see image)`;
+
+  let prompt;
+  if (isCorrect) {
+    prompt = `A student just answered an SAT question correctly. Give them a short, warm, and thoughtful 1-2 sentence praise message. Be specific and encouraging — vary your praise style (don't always say "Great job"). Make it feel genuine and human.
+
+Question type: ${q.domain} — ${q.skill}
+Difficulty: ${q.difficulty}
+Their answer: ${chosenLetter}. ${chosenText}
+
+Keep it to 1-2 sentences max. Do NOT reveal the answer or explain anything — just praise.`;
+  } else {
+    prompt = `A student answered an SAT question incorrectly. Give personalized feedback based on HOW wrong their answer was. NEVER reveal the correct answer.
+
+Question: ${q.question.substring(0, 300)}
+Domain: ${q.domain} — ${q.skill}
+Difficulty: ${q.difficulty}
+Correct answer letter: ${correctLetter}
+Student chose: ${chosenLetter}. ${chosenText}
+Correct answer text: ${correctText}
+
+Analyze how wrong the student's choice was by comparing it to the correct answer:
+- If the student's choice is ALMOST correct (very close in meaning, a subtle distinction, easy to confuse): acknowledge they were on the right track and point out the small distinction they missed. Be encouraging.
+- If the student's choice is COMPLETELY off (totally different concept, random, no relation): tease them gently and playfully (not mean) — like "that was a bold swing!" — and nudge them toward the general type of reasoning needed.
+- If the student's choice is in the RIGHT DIRECTION but not quite right (related concept, partially correct logic): give a helpful tip about what direction to look in without giving it away.
+
+Write 2-3 sentences. Be warm but direct. Do NOT state the correct answer. Do NOT say which letter is correct.`;
+  }
+
+  try {
+    const res = await fetch(ANTHROPIC_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 150,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content && data.content[0] ? data.content[0].text : '';
+    tutorSpinner.style.display = 'none';
+    tutorText.style.display = 'block';
+    tutorText.textContent = text;
+  } catch(e) {
+    tutorSpinner.style.display = 'none';
+    tutorText.style.display = 'block';
+    tutorText.textContent = isCorrect
+      ? 'Nicely done! Keep that momentum going.'
+      : 'Think carefully about what the question is really asking before choosing. Work through each option methodically.';
+  }
+}
+
+async function nextQuestion() {
+  currentQ++;
+  if (currentQ >= Q_PLAN_IDS.length) await showResults();
+  else loadQuestion();
+}
+
+async function showResults() {
+  document.getElementById('student-q-screen').style.display = 'none';
+  document.getElementById('student-results').style.display = 'block';
+
+  const subMap = {};
+  answers.forEach(a => {
+    if (!a) return;
+    if (!subMap[a.sub]) subMap[a.sub] = {correct:0,total:0};
+    subMap[a.sub].total++;
+    if (a.correct) subMap[a.sub].correct++;
+  });
+
+  const rwA = answers.filter(a=>a && a.section==='rw');
+  const mA  = answers.filter(a=>a && a.section==='math');
+  const rwPct = rwA.length ? rwA.filter(a=>a.correct).length/rwA.length : 0.5;
+  const mPct  = mA.length  ? mA.filter(a=>a.correct).length/mA.length  : 0.5;
+  const rwScore   = Math.round(200 + rwPct*600);
+  const mathScore = Math.round(200 + mPct*600);
+  const total = rwScore + mathScore;
+
+  document.getElementById('r-total').textContent = total;
+  document.getElementById('r-rw').textContent = rwScore;
+  document.getElementById('r-math').textContent = mathScore;
+  document.getElementById('r-range').textContent = `Range: ${total-60}–${total+60}`;
+
+  const allSubs = {};
+  [...SUBSECTIONS.rw, ...SUBSECTIONS.math].forEach(s => {
+    const d = subMap[s] || {correct:0,total:0};
+    allSubs[s] = d.total > 0 ? d.correct/d.total : 0.5;
+  });
+
+  const gapsEl = document.getElementById('r-gaps');
+  gapsEl.innerHTML = '';
+  Object.entries(allSubs).forEach(([sub, pct]) => {
+    const p = Math.round(pct*100);
+    const cls = p>=70?'bar-good':p>=40?'bar-ok':'bar-low';
+    gapsEl.innerHTML += `<div class="gap-item">
+      <div class="gap-label-row"><span class="gap-label">${sub}</span><span class="gap-pct">${p}%</span></div>
+      <div class="gap-track"><div class="gap-bar ${cls}" style="width:0%" data-w="${p}%"></div></div>
+    </div>`;
+  });
+  setTimeout(()=>{ document.querySelectorAll('.gap-bar').forEach(b=>b.style.width=b.dataset.w); }, 100);
+
+  const sorted = Object.entries(allSubs).sort((a,b)=>a[1]-b[1]);
+  const prEl = document.getElementById('r-priorities');
+  prEl.innerHTML = '';
+  sorted.slice(0,3).forEach(([sub,pct],i) => {
+    const p = Math.round(pct*100);
+    const tip = p<40?'Start with foundational practice — 30 min/day this week.':p<70?'Review core concepts and do 2–3 targeted practice sets.':'Polish with timed practice for speed.';
+    prEl.innerHTML += `<div class="priority-item">
+      <div class="pnum pnum-${i+1}">${i+1}</div>
+      <div><div class="priority-name">${sub}</div><div class="priority-tip">${tip}</div></div>
+    </div>`;
+  });
+
+  const result = {
+    name: studentName,
+    total, rwScore, mathScore,
+    subScores: allSubs,
+    topGap: sorted[0][0],
+    completedAt: new Date().toISOString()
+  };
+  const key = `vsp_class_${classCode}`;
+  const existing = JSON.parse(localStorage.getItem(key) || '[]');
+  const updated = existing.filter(r => r.name !== studentName);
+  updated.push(result);
+  localStorage.setItem(key, JSON.stringify(updated));
+}
+
+// ── Teacher Dashboard ──
+function loadDashboard() {
+  const key = `vsp_class_${classCode}`;
+  const results = JSON.parse(localStorage.getItem(key) || '[]');
+
+  document.getElementById('d-students').textContent = results.length;
+  document.getElementById('empty-dash').style.display = results.length ? 'none' : 'block';
+  document.getElementById('dash-content').style.display = results.length ? 'block' : 'none';
+
+  if (!results.length) return;
+
+  const avg = Math.round(results.reduce((s,r)=>s+r.total,0)/results.length);
+  document.getElementById('d-avg').textContent = avg;
+
+  const allSubs = [...SUBSECTIONS.rw, ...SUBSECTIONS.math];
+  const subAvg = {};
+  allSubs.forEach(s => {
+    const scores = results.map(r => r.subScores[s] ?? 0.5);
+    subAvg[s] = scores.reduce((a,b)=>a+b,0)/scores.length;
+  });
+
+  const sorted = Object.entries(subAvg).sort((a,b)=>a[1]-b[1]);
+  document.getElementById('d-lowest').textContent = sorted[0][0].split(' ')[0];
+
+  const hmEl = document.getElementById('heatmap-rows');
+  hmEl.innerHTML = '';
+  sorted.forEach(([sub, avg]) => {
+    const p = Math.round(avg*100);
+    const col = p>=70?'var(--accent)':p>=50?'var(--warn)':'var(--danger)';
+    hmEl.innerHTML += `<div class="heatmap-row">
+      <span class="heatmap-label">${sub}</span>
+      <div class="heatmap-bar-wrap">
+        <div class="heatmap-track"><div class="heatmap-fill" style="width:0%;background:${col}" data-w="${p}%"></div></div>
+        <span class="heatmap-count">${p}%</span>
+      </div>
+    </div>`;
+  });
+  setTimeout(()=>{ document.querySelectorAll('.heatmap-fill').forEach(b=>b.style.width=b.dataset.w); }, 100);
+
+  const tbody = document.getElementById('student-rows');
+  tbody.innerHTML = '';
+  results.sort((a,b)=>b.total-a.total).forEach(r => {
+    const pillCls = r.total>=1200?'pill-high':r.total>=900?'pill-mid':'pill-low';
+    const date = new Date(r.completedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    tbody.innerHTML += `<tr>
+      <td>${r.name}</td>
+      <td><span class="score-pill ${pillCls}">${r.total}</span></td>
+      <td style="color:var(--accent2)">${r.rwScore}</td>
+      <td style="color:var(--purple)">${r.mathScore}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${r.topGap}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted)">${date}</td>
+    </tr>`;
+  });
+}
+
+async function getAIRecs() {
+  const key = `vsp_class_${classCode}`;
+  const results = JSON.parse(localStorage.getItem(key) || '[]');
+  if (!results.length) { alert('No student results yet.'); return; }
+
+  const btn = document.getElementById('ai-btn');
+  const textEl = document.getElementById('ai-text');
+  btn.disabled = true; btn.textContent = 'Thinking…';
+  textEl.textContent = '';
+
+  const allSubs = [...SUBSECTIONS.rw, ...SUBSECTIONS.math];
+  const subAvg = {};
+  allSubs.forEach(s => {
+    const scores = results.map(r => r.subScores[s] ?? 0.5);
+    subAvg[s] = Math.round((scores.reduce((a,b)=>a+b,0)/scores.length)*100);
+  });
+  const sorted = Object.entries(subAvg).sort((a,b)=>a[1]-b[1]);
+  const classAvg = Math.round(results.reduce((s,r)=>s+r.total,0)/results.length);
+
+  const prompt = `You are an experienced SAT prep teacher in Bakersfield, CA. Here are your class's diagnostic results:
+
+Class size: ${results.length} students
+Average score: ${classAvg}/1600
+
+Subsection performance (% correct):
+${sorted.map(([s,p])=>`- ${s}: ${p}%`).join('\n')}
+
+Please write 3-4 specific, actionable recommendations for how I should adjust my next week of instruction. Be specific about what to teach, what resources to use, and how much time to spend. Keep it practical for a public school teacher with limited resources. Format as numbered recommendations.`;
+
+  try {
+    const res = await fetch(ANTHROPIC_API, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:600, messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    textEl.textContent = data.content[0].text;
+    textEl.style.color = 'var(--text)';
+    textEl.style.fontStyle = 'normal';
+  } catch(e) {
+    textEl.textContent = 'Could not load recommendations. Check your connection.';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Regenerate →';
+}
+
+// Boot
+handleURLParams();
+</script>
+</body>
+</html>
