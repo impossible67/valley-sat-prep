@@ -459,6 +459,16 @@ nav {
         <div style="margin-top:0.4rem;font-size:0.85rem;color:var(--muted)">
           Share code with students: <span class="code-display" id="dash-code">—</span>
         </div>
+        <div class="ai-toggle-row" style="margin-top:1rem;margin-bottom:0;max-width:520px">
+          <div>
+            <div style="font-weight:500;color:var(--text);font-size:0.9rem">Class AI Tutor Access</div>
+            <div class="ai-toggle-copy">Teacher control: turn off AI Tutor access for students using this class code.</div>
+          </div>
+          <label class="switch" title="Enable or disable AI Tutor for this class">
+            <input type="checkbox" id="class-ai-toggle" checked onchange="setClassAIEnabled(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
       <button class="btn" onclick="loadDashboard()">Refresh</button>
     </div>
@@ -521,19 +531,7 @@ function setAIEnabled(value) {
   aiEnabled = Boolean(value);
   localStorage.setItem('vsp_ai_enabled', aiEnabled ? 'true' : 'false');
   document.querySelectorAll('#student-ai-toggle,#teacher-ai-toggle').forEach(el => { if (el) el.checked = aiEnabled; });
-
-  const tutorBtn = document.getElementById('tutor-toggle-btn');
-  const tutorPanel = document.getElementById('ai-tutor-panel');
-
-  if (tutorBtn) tutorBtn.style.display = aiEnabled ? 'inline-block' : 'none';
-
-  if (!aiEnabled && tutorPanel) {
-    tutorPanel.style.display = 'none';
-    if (tutorBtn) tutorBtn.textContent = 'Open AI Tutor';
-  }
-
-  const status = document.getElementById('ai-status');
-  if (status) status.textContent = aiEnabled ? '' : 'AI is off — tutor disabled.';
+  updateStudentAIAvailability();
 }
 
 function syncAIToggles() {
@@ -550,8 +548,62 @@ function syncAIToggles() {
   }
 }
 
+function classAIKey(code = classCode) {
+  return `vsp_class_${code}_ai_enabled`;
+}
+
+function isClassAIEnabled(code = classCode) {
+  if (!code) return true;
+  return localStorage.getItem(classAIKey(code)) !== 'false';
+}
+
+function setClassAIEnabled(value) {
+  const enabled = Boolean(value);
+  if (!classCode) return;
+
+  localStorage.setItem(classAIKey(classCode), enabled ? 'true' : 'false');
+
+  const classToggle = document.getElementById('class-ai-toggle');
+  if (classToggle) classToggle.checked = enabled;
+
+  updateStudentAIAvailability();
+}
+
+function syncClassAIToggle() {
+  const classToggle = document.getElementById('class-ai-toggle');
+  if (classToggle) classToggle.checked = isClassAIEnabled();
+}
+
+function updateStudentAIAvailability() {
+  const classEnabled = isClassAIEnabled();
+  const effectiveAI = aiEnabled && classEnabled;
+
+  const studentToggle = document.getElementById('student-ai-toggle');
+  if (studentToggle) {
+    studentToggle.disabled = !classEnabled;
+    studentToggle.checked = effectiveAI;
+  }
+
+  const tutorBtn = document.getElementById('tutor-toggle-btn');
+  const tutorPanel = document.getElementById('ai-tutor-panel');
+
+  if (tutorBtn) tutorBtn.style.display = effectiveAI ? 'inline-block' : 'none';
+
+  if (!effectiveAI && tutorPanel) {
+    tutorPanel.style.display = 'none';
+    if (tutorBtn) tutorBtn.textContent = 'Open AI Tutor';
+  }
+
+  const status = document.getElementById('ai-status');
+  if (status) {
+    if (!classEnabled) status.textContent = 'AI Tutor disabled by teacher for this class.';
+    else if (!aiEnabled) status.textContent = 'AI is off — tutor disabled.';
+    else status.textContent = '';
+  }
+}
+
 async function callAI(system, user, options = {}) {
-  if (!aiEnabled) throw new Error('AI disabled');
+  if (!aiEnabled || !isClassAIEnabled()) throw new Error('AI disabled');
 
   const maxRetries = options.retries ?? 2;
   const maxTokens = options.max_tokens ?? 600;
@@ -684,6 +736,7 @@ function joinAsStudent() {
   classCode = code;
   document.getElementById('student-class-label').textContent = code;
   showPage('page-student');
+  updateStudentAIAvailability();
 }
 
 function joinAsTeacher() {
@@ -702,6 +755,7 @@ function openTeacherDash() {
   document.getElementById('dash-class-title').textContent = 'Class ' + classCode;
   document.getElementById('dash-code').textContent = classCode;
   showPage('page-teacher');
+  syncClassAIToggle();
   loadDashboard();
   setInterval(loadDashboard, 10000);
 }
@@ -713,6 +767,7 @@ function handleURLParams() {
     classCode = p.get('class').toUpperCase();
     document.getElementById('student-class-label').textContent = classCode;
     showPage('page-student');
+    updateStudentAIAvailability();
   } else if (p.get('role') === 'teacher' && p.get('class')) {
     classCode = p.get('class').toUpperCase();
     openTeacherDash();
@@ -785,6 +840,7 @@ function renderQuestion(q) {
   document.getElementById('explanation').style.display = 'none';
   clearTutorHint();
   syncAIToggles();
+  updateStudentAIAvailability();
 
   const tutorPanel = document.getElementById('ai-tutor-panel');
   const tutorBtn = document.getElementById('tutor-toggle-btn');
@@ -1185,6 +1241,10 @@ Please write 3-4 specific, actionable recommendations for how I should adjust my
 
 let tutorInitialized=false;
 function toggleTutor(){
+ if (!aiEnabled || !isClassAIEnabled()) {
+   updateStudentAIAvailability();
+   return;
+ }
  const panel=document.getElementById('ai-tutor-panel');
  const btn=document.getElementById('tutor-toggle-btn');
  if(panel.style.display==='none' || panel.style.display===''){
@@ -1228,6 +1288,10 @@ function addMessage(role,text){
 }
 
 async function sendTutorMessage(){
+ if (!aiEnabled || !isClassAIEnabled()) {
+   addMessage('ai','AI Tutor is disabled for this class.');
+   return;
+ }
  const input=document.getElementById('chat-input');
  if(!input) return;
  const userMessage=input.value.trim();
@@ -1284,6 +1348,7 @@ ${userMessage}`;
 
 // Boot
 syncAIToggles();
+syncClassAIToggle();
 handleURLParams();
 </script>
 </body>
