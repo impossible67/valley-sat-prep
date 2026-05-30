@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valley SAT Prep - Teacher Dropdown Clean</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f11;
+  --surface: #18181c;
+  --surface2: #222228;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0efe8;
+  --muted: #888880;
+  --accent: #7ee8a2;
+  --accent2: #5bc4f5;
+  --warn: #f5a623;
+  --danger: #f55f5f;
+  --purple: #b59cf5;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 2.4rem; letter-spacing: -0.02em; }
+h2 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.6rem; letter-spacing: -0.01em; }
+h3 { font-size: 0.8rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.mono { font-family: 'DM Mono', monospace; }
+
+/* ── Layout ── */
+.page { display: none; min-height: 100vh; }
+.page.active { display: flex; flex-direction: column; }
+.container { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem; flex: 1; }
+.container.wide { max-width: 900px; }
+
+/* ── Home ── */
+.home-hero {
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: 100vh; padding: 3rem 2rem; max-width: 540px; margin: 0 auto;
+}
+.badge {
+  display: inline-block; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; background: rgba(94,200,162,0.12); color: var(--accent);
+  border: 1px solid rgba(94,200,162,0.25); border-radius: 99px; padding: 4px 14px;
+  margin-bottom: 1.5rem;
+}
+.home-hero h1 { margin-bottom: 1rem; }
+.home-hero p { color: var(--muted); margin-bottom: 2.5rem; font-size: 1.05rem; }
+.role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+.role-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem 1.25rem; cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  text-align: left;
+}
+.role-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.role-card .role-icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
+.role-card .role-title { font-weight: 500; font-size: 1rem; margin-bottom: 0.25rem; }
+.role-card .role-desc { font-size: 0.82rem; color: var(--muted); }
+.class-input-wrap { display: flex; gap: 8px; }
+input[type="text"] {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.65rem 1rem; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 1rem; letter-spacing: 0.06em;
+  outline: none; transition: border-color 0.2s;
+}
+input[type="text"]:focus { border-color: var(--accent); }
+input[type="text"]::placeholder { color: var(--muted); letter-spacing: 0.02em; font-size: 0.9rem; }
+
+/* ── Buttons ── */
+.btn {
+  background: var(--accent); color: #0a1a10; border: none; border-radius: var(--radius-sm);
+  padding: 0.7rem 1.4rem; font-weight: 600; font-size: 0.9rem; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
+}
+.btn:hover { opacity: 0.88; }
+.btn:active { transform: scale(0.98); }
+.btn.secondary {
+  background: var(--surface2); color: var(--text); border: 1px solid var(--border2);
+}
+.btn.secondary:hover { background: var(--surface); border-color: var(--accent); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn.blue { background: var(--accent2); color: #071520; }
+.btn.purple { background: var(--purple); color: #100a20; }
+
+/* ── Nav ── */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+  background: rgba(15,15,17,0.92); backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 10;
+}
+.nav-brand { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.1rem; }
+.nav-class { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--muted); }
+
+/* ── Progress bar ── */
+.progress-wrap { margin-bottom: 1.5rem; }
+.progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.progress-track { height: 3px; background: var(--surface2); border-radius: 99px; }
+.progress-fill { height: 3px; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; }
+
+/* ── Question card ── */
+.q-section-tag {
+  display: inline-block; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; border-radius: 99px; padding: 3px 12px; margin-bottom: 1.25rem;
+}
+.tag-rw { background: rgba(91,196,245,0.12); color: var(--accent2); border: 1px solid rgba(91,196,245,0.2); }
+.tag-math { background: rgba(181,156,245,0.12); color: var(--purple); border: 1px solid rgba(181,156,245,0.2); }
+
+.passage-box {
+  background: var(--surface); border-left: 2px solid var(--border2);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.9rem 1.1rem; margin-bottom: 1.25rem;
+  font-size: 0.88rem; color: var(--muted); line-height: 1.7;
+}
+.q-text { font-size: 1.05rem; margin-bottom: 1.25rem; line-height: 1.65; }
+
+.question-img-wrap {
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+.question-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+.free-response-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+.free-response-row input {
+  text-transform: none;
+  letter-spacing: 0;
+}
+@media (max-width: 560px) {
+  .answers { grid-template-columns: 1fr; }
+  .free-response-row { flex-direction: column; }
+}
+
+
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.answer-btn {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.85rem 1rem;
+  font-size: 0.88rem; color: var(--text); cursor: pointer;
+  text-align: left; line-height: 1.5; transition: border-color 0.15s, background 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.answer-btn:hover { border-color: var(--border2); background: var(--surface2); }
+.answer-btn.choice-letter-only { text-align: center; font-size: 1.15rem; font-weight: 600; }
+.answer-btn.selected { border-color: var(--accent2); background: rgba(91,196,245,0.06); }
+.answer-btn.correct { border-color: var(--accent); background: rgba(126,232,162,0.08); color: var(--accent); }
+.answer-btn.incorrect { border-color: var(--danger); background: rgba(245,95,95,0.07); color: var(--danger); }
+
+.explanation {
+  background: var(--surface2); border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem; font-size: 0.84rem; color: var(--muted);
+  line-height: 1.6; margin-bottom: 1rem; display: none;
+}
+
+/* ── Loading ── */
+.loading {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 3rem; gap: 1rem; color: var(--muted); font-size: 0.88rem;
+}
+.spinner {
+  width: 28px; height: 28px; border: 2px solid var(--border2);
+  border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Results ── */
+.score-hero {
+  text-align: center; padding: 2.5rem 0 2rem;
+  border-bottom: 1px solid var(--border); margin-bottom: 2rem;
+}
+.score-big {
+  font-family: 'Fraunces', serif; font-weight: 600; font-size: 5rem;
+  line-height: 1; color: var(--accent); letter-spacing: -0.03em;
+}
+.score-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }
+.score-range { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+.sub-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 2rem; }
+.sub-score-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+}
+.sub-score-val { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 300; }
+.sub-score-lbl { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.rw-color { color: var(--accent2); }
+.math-color { color: var(--purple); }
+
+.gap-section { margin-bottom: 2rem; }
+.gap-item { margin-bottom: 1rem; }
+.gap-label-row { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 5px; }
+.gap-label { color: var(--text); }
+.gap-pct { font-family: 'DM Mono', monospace; color: var(--muted); }
+.gap-track { height: 6px; background: var(--surface2); border-radius: 99px; }
+.gap-bar { height: 6px; border-radius: 99px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+.bar-good { background: var(--accent); }
+.bar-ok { background: var(--warn); }
+.bar-low { background: var(--danger); }
+
+.priority-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+.priority-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 1rem 1.1rem;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.pnum {
+  width: 22px; height: 22px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 0.72rem;
+  font-weight: 600; flex-shrink: 0; margin-top: 1px;
+}
+.pnum-1 { background: rgba(245,95,95,0.15); color: var(--danger); }
+.pnum-2 { background: rgba(245,166,35,0.15); color: var(--warn); }
+.pnum-3 { background: rgba(126,232,162,0.15); color: var(--accent); }
+.priority-name { font-size: 0.9rem; font-weight: 500; margin-bottom: 2px; }
+.priority-tip { font-size: 0.8rem; color: var(--muted); }
+
+/* ── Teacher Dashboard ── */
+.dash-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+}
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 2rem; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.25rem;
+}
+.stat-val { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 300; margin-bottom: 2px; }
+.stat-lbl { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.heatmap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem;
+}
+.heatmap-title { font-size: 0.78rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.25rem; }
+.heatmap-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.heatmap-label { font-size: 0.8rem; color: var(--muted); width: 200px; flex-shrink: 0; }
+.heatmap-bar-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+.heatmap-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 99px; }
+.heatmap-fill { height: 8px; border-radius: 99px; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+.heatmap-count { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); min-width: 32px; text-align: right; }
+
+.ai-panel {
+  background: var(--surface); border: 1px solid rgba(181,156,245,0.2);
+  border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem;
+}
+.ai-panel-header { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+.ai-dot { width: 8px; height: 8px; background: var(--purple); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.ai-text { font-size: 0.88rem; color: var(--muted); line-height: 1.7; white-space: pre-wrap; }
+
+.student-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+.student-table th {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--muted); padding: 0.6rem 0.75rem; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.student-table td {
+  padding: 0.7rem 0.75rem; font-size: 0.85rem;
+  border-bottom: 1px solid var(--border); color: var(--text);
+}
+.student-table tr:last-child td { border-bottom: none; }
+.score-pill {
+  font-family: 'DM Mono', monospace; font-size: 0.78rem; font-weight: 500;
+  padding: 3px 10px; border-radius: 99px;
+}
+.pill-high { background: rgba(126,232,162,0.12); color: var(--accent); }
+.pill-mid  { background: rgba(245,166,35,0.12); color: var(--warn); }
+.pill-low  { background: rgba(245,95,95,0.12); color: var(--danger); }
+
+.refresh-bar {
+  display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--muted);
+}
+.live-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s infinite; }
+
+/* ── Join code display ── */
+.code-display {
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); padding: 0.6rem 1rem;
+  font-family: 'DM Mono', monospace; font-size: 1.3rem; letter-spacing: 0.15em;
+  color: var(--accent); display: inline-block;
+}
+
+/* ── Misc ── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+.empty-state {
+  text-align: center; padding: 3rem; color: var(--muted);
+  border: 1px dashed var(--border2); border-radius: var(--radius); margin-bottom: 2rem;
+}
+.empty-state p { font-size: 0.88rem; margin-top: 0.5rem; }
+
+
+/* ── Enhanced diagnostic teacher tools ── */
+.confidence-card {
+  background: rgba(91,196,245,0.06); border: 1px solid rgba(91,196,245,0.18);
+  border-radius: var(--radius-sm); padding: 0.9rem 1rem; margin: 0 0 1rem; display: none;
+}
+.confidence-card .confidence-title { font-size: 0.82rem; color: var(--text); margin-bottom: 0.65rem; }
+.confidence-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.confidence-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius-sm); padding: 0.65rem; cursor: pointer; }
+.confidence-btn:hover, .confidence-btn.selected { border-color: var(--accent2); background: rgba(91,196,245,0.10); }
+
+.stats-row.enhanced { grid-template-columns: repeat(4, 1fr); }
+.diagnostic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 2rem; }
+.diagnostic-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.25rem; min-height: 120px;
+}
+.diagnostic-card.full { grid-column: 1 / -1; }
+.diagnostic-card h3 { margin-bottom: 1rem; }
+.mini-list { display: flex; flex-direction: column; gap: 8px; }
+.mini-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.mini-item:last-child { border-bottom: none; padding-bottom: 0; }
+.mini-main { font-size: 0.86rem; color: var(--text); }
+.mini-sub { font-size: 0.74rem; color: var(--muted); margin-top: 2px; }
+.badge-small { font-family: 'DM Mono', monospace; font-size: 0.72rem; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.badge-danger { background: rgba(245,95,95,0.12); color: var(--danger); }
+.badge-warn { background: rgba(245,166,35,0.12); color: var(--warn); }
+.badge-good { background: rgba(126,232,162,0.12); color: var(--accent); }
+.teacher-actions { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:1.25rem; }
+.practice-list { display: grid; gap: 8px; }
+.practice-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.85rem; }
+.practice-item .qid { font-family:'DM Mono',monospace; color:var(--muted); font-size:0.72rem; }
+.review-table-wrap { overflow-x:auto; border: 1px solid var(--border); border-radius: var(--radius); }
+.review-table { width:100%; border-collapse:collapse; min-width: 920px; }
+.review-table th { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; text-align:left; padding:0.65rem; border-bottom:1px solid var(--border); }
+.review-table td { font-size:0.78rem; padding:0.65rem; border-bottom:1px solid var(--border); vertical-align:top; }
+.review-table tr:last-child td { border-bottom:none; }
+/* ── Always-visible Teacher Toolkit ── */
+.teacher-toolkit {
+  background: linear-gradient(135deg, rgba(181,156,245,0.12), rgba(91,196,245,0.06));
+  border: 1px solid rgba(181,156,245,0.28);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.toolkit-head { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-bottom:1rem; }
+.toolkit-title { font-size:0.8rem; color:var(--purple); text-transform:uppercase; letter-spacing:0.08em; font-weight:600; }
+.toolkit-sub { color:var(--muted); font-size:0.84rem; margin-top:0.25rem; max-width:650px; }
+.toolkit-actions { display:grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap:10px; }
+.toolkit-actions .btn { width:100%; padding:0.75rem 0.8rem; }
+.feature-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:1rem; }
+.feature-chip { font-size:0.72rem; color:var(--muted); background:rgba(255,255,255,0.045); border:1px solid var(--border); padding:4px 9px; border-radius:99px; }
+.section-anchor-pad { scroll-margin-top:90px; }
+@media(max-width:760px){ .toolkit-actions { grid-template-columns: 1fr 1fr; } }
+@media(max-width:520px){ .toolkit-actions { grid-template-columns: 1fr; } }
+
+.group-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.85rem; }
+.group-name { font-weight:600; color:var(--text); margin-bottom:4px; }
+.group-students { font-size:0.8rem; color:var(--muted); }
+
+.student-dropdown-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin: 1rem 0 1.5rem;
+}
+.student-select-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.student-select-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.student-select {
+  flex: 1;
+  min-width: 220px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem;
+  outline: none;
+}
+.student-select:focus { border-color: var(--accent); }
+.student-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+.student-detail-stat {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem;
+}
+.student-detail-value {
+  font-family: 'Fraunces', serif;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+.student-detail-label {
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-top: 0.35rem;
+}
+.student-detail-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.student-detail-panel {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+.student-detail-panel h4 {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.student-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.student-mini-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.45rem 0;
+  color: var(--muted);
+}
+.student-mini-table td:last-child { text-align: right; color: var(--text); }
+.student-mini-table tr:last-child td { border-bottom: none; }
+@media (max-width: 760px) {
+  .student-detail-grid { grid-template-columns: 1fr 1fr; }
+  .student-detail-body { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  .stats-row.enhanced { grid-template-columns: 1fr 1fr; }
+  .diagnostic-grid { grid-template-columns: 1fr; }
+  .confidence-actions { grid-template-columns: 1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="home-hero">
+    <div class="badge">Hack the Valley · CSUB 2026</div>
+    <h1>Valley SAT Prep</h1>
+    <p>AI-powered diagnostics for Central Valley classrooms. Students get personal gap analysis. Teachers get class-wide insights.</p>
+    <div class="role-cards">
+      <div class="role-card" onclick="showRoleInput('student')">
+        <div class="role-icon">✏️</div>
+        <div class="role-title">I'm a student</div>
+        <div class="role-desc">Take the diagnostic, see your gaps</div>
+      </div>
+      <div class="role-card" onclick="showRoleInput('teacher')">
+        <div class="role-icon">📊</div>
+        <div class="role-title">I'm a teacher</div>
+        <div class="role-desc">See your class dashboard</div>
+      </div>
+    </div>
+    <div id="role-input-area"></div>
+  </div>
+</div>
+
+<!-- STUDENT DIAGNOSTIC -->
+<div class="page" id="page-student">
+  <nav>
+    <span class="nav-brand">Valley SAT Prep</span>
+    <span class="nav-class mono" id="student-class-label"></span>
+  </nav>
+  <div class="container">
+    <!-- Name entry -->
+    <div id="student-name-screen">
+      <br>
+      <h2>Before we start</h2>
+      <p style="color:var(--muted);margin:0.75rem 0 1.5rem">Your results go to your teacher's class dashboard anonymously — they see trends, not individual answers.</p>
+      <input type="text" id="student-name-input" placeholder="Your first name (shown on dashboard)" style="width:100%;margin-bottom:12px">
+      <button class="btn" onclick="startDiagnostic()">Start diagnostic →</button>
+    </div>
+    <!-- Questions -->
+    <div id="student-q-screen" style="display:none">
+      <div class="progress-wrap">
+        <div class="progress-top">
+          <span id="q-counter" style="font-size:0.8rem;color:var(--muted)">Question 1 of 10</span>
+          <span id="q-section-tag" class="q-section-tag tag-rw">Reading & Writing</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="prog" style="width:10%"></div></div>
+      </div>
+      <div id="q-loading" class="loading"><div class="spinner"></div><span>Generating question…</span></div>
+      <div id="q-content" style="display:none">
+        <div class="passage-box" id="q-passage" style="display:none"></div>
+        <div id="q-image-wrap" class="question-img-wrap" style="display:none;">
+          <img id="q-image" class="question-img" alt="SAT question image">
+        </div>
+        <p class="q-text" id="q-text"></p>
+        <div class="answers" id="answers"></div>
+        <div class="explanation" id="explanation"></div>
+        <div class="confidence-card" id="confidence-card">
+          <div class="confidence-title">How confident were you?</div>
+          <div class="confidence-actions">
+            <button class="confidence-btn" onclick="setConfidence('Low')">Low</button>
+            <button class="confidence-btn" onclick="setConfidence('Medium')">Medium</button>
+            <button class="confidence-btn" onclick="setConfidence('High')">High</button>
+          </div>
+        </div>
+        <button class="btn secondary" id="next-btn" disabled onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+    <!-- Results -->
+    <div id="student-results" style="display:none">
+      <div class="score-hero">
+        <div class="score-big" id="r-total">—</div>
+        <div class="score-label">predicted SAT score</div>
+        <div class="score-range" id="r-range"></div>
+      </div>
+      <div class="sub-scores">
+        <div class="sub-score-card"><div class="sub-score-val rw-color" id="r-rw">—</div><div class="sub-score-lbl">Reading & Writing</div></div>
+        <div class="sub-score-card"><div class="sub-score-val math-color" id="r-math">—</div><div class="sub-score-lbl">Math</div></div>
+      </div>
+      <h3>Your gap analysis</h3>
+      <div class="gap-section" id="r-gaps" style="margin-top:1rem"></div>
+      <h3>Top priorities</h3>
+      <div class="priority-list" id="r-priorities" style="margin-top:1rem"></div>
+      <button class="btn blue" onclick="goHome()" style="width:100%">Done — go back home</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER DASHBOARD -->
+<div class="page" id="page-teacher">
+  <nav>
+    <span class="nav-brand">Teacher Dashboard</span>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="refresh-bar"><span class="live-dot"></span>Live updates</span>
+      <button class="btn secondary" onclick="goHome()" style="padding:0.4rem 0.9rem;font-size:0.8rem">← Home</button>
+    </div>
+  </nav>
+  <div class="container wide">
+    <br>
+    <div class="dash-header">
+      <div>
+        <h2 id="dash-class-title">Class —</h2>
+        <div style="margin-top:0.4rem;font-size:0.85rem;color:var(--muted)">
+          Share code with students: <span class="code-display" id="dash-code">—</span>
+        </div>
+      </div>
+      <button class="btn" onclick="loadDashboard()">Refresh</button>
+    </div>
+
+    <div class="stats-row enhanced">
+      <div class="stat-card"><div class="stat-val" id="d-students">0</div><div class="stat-lbl">Students completed</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-avg">—</div><div class="stat-lbl">Class avg score</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-lowest">—</div><div class="stat-lbl">Biggest gap area</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-time">—</div><div class="stat-lbl">Avg time/question</div></div>
+    </div>
+
+    <div class="teacher-toolkit">
+      <div class="toolkit-head">
+        <div>
+          <div class="toolkit-title">Diagnostic toolkit</div>
+          <div class="toolkit-sub">These are the teacher-side tools for turning quiz results into action: priority skills, wrong-answer patterns, student groups, timing/confidence flags, and targeted practice.</div>
+        </div>
+        <button class="btn secondary" onclick="loadDashboard()">Refresh data</button>
+      </div>
+      <div class="toolkit-actions">
+        <button class="btn purple" onclick="getAIRecs()">Teaching plan</button>
+        <button class="btn blue" onclick="generatePracticeSet()">Practice set</button>
+        <button class="btn secondary" onclick="scrollToDiagnostic('student-groups')">Student groups</button>
+        <button class="btn secondary" onclick="scrollToDiagnostic('full-student-table')">Student table</button>
+        <button class="btn secondary" onclick="loadDemoResults()">Load demo data</button>
+        <button class="btn secondary" onclick="clearClassResults()">Clear class data</button>
+      </div>
+      <div class="feature-chips">
+        <span class="feature-chip">Skill breakdown</span>
+        <span class="feature-chip">Priority skills</span>
+        <span class="feature-chip">Mistake patterns</span>
+        <span class="feature-chip">Recommended practice</span>
+        <span class="feature-chip">Student grouping</span>
+        <span class="feature-chip">Full student table</span>
+        <span class="feature-chip">Time/question</span>
+        <span class="feature-chip">Confidence flags</span>
+      </div>
+    </div>
+
+    <div id="empty-dash" class="empty-state">
+      <div style="font-size:1.8rem">📭</div>
+      <p>No students have completed the diagnostic yet.<br>Share the class code above, or click <b>Load demo data</b> to show the full teacher toolkit.</p>
+    </div>
+
+    <div id="dash-content" style="display:none">
+      <div class="teacher-actions">
+        <button class="btn purple" onclick="getAIRecs()" id="ai-btn">Generate teaching plan</button>
+        <button class="btn blue" onclick="generatePracticeSet()">Generate practice set</button>
+      </div>
+
+      <div class="heatmap">
+        <div class="heatmap-title">Class performance by subsection — red = needs attention</div>
+        <div id="heatmap-rows"></div>
+      </div>
+
+      <div class="diagnostic-grid">
+        <div class="diagnostic-card">
+          <h3>Priority skills</h3>
+          <div id="teacher-priority-skills" class="mini-list"></div>
+        </div>
+        <div class="diagnostic-card">
+          <h3>Common wrong-answer patterns</h3>
+          <div id="mistake-patterns" class="mini-list"></div>
+        </div>
+        <div class="diagnostic-card section-anchor-pad" id="student-groups-card">
+          <h3>Student groups</h3>
+          <div id="student-groups" class="mini-list"></div>
+        </div>
+        <div class="diagnostic-card">
+          <h3>Timing + confidence flags</h3>
+          <div id="timing-confidence" class="mini-list"></div>
+        </div>
+        <div class="diagnostic-card full">
+          <h3>Recommended practice set</h3>
+          <div id="practice-set" class="practice-list"><div class="mini-sub">Click “Generate practice set” to pull targeted questions from the weakest skills. Image-reliant questions are skipped when possible.</div></div>
+        </div>
+      </div>
+
+      <div class="ai-panel">
+        <div class="ai-panel-header">
+          <div class="ai-dot"></div>
+          <h3 style="margin:0;letter-spacing:0.06em">Teaching recommendations</h3>
+        </div>
+        <div class="ai-text" id="ai-text" style="color:var(--muted);font-size:0.82rem;font-style:italic">Click “Generate teaching plan” to get local recommendations based on class gaps. No API key required.</div>
+      </div>
+
+      <h3>Individual student data</h3>
+      <div class="student-dropdown-card">
+        <div class="student-select-row">
+          <label class="student-select-label" for="student-data-select">Select a student</label>
+          <select id="student-data-select" class="student-select" onchange="renderSelectedStudentData()"></select>
+          <button class="btn secondary" onclick="renderSelectedStudentData()">View</button>
+        </div>
+        <div id="selected-student-panel">
+          <div class="mini-sub">Choose a student to see score, gap, timing, confidence flags, and question-level results.</div>
+        </div>
+      </div>
+
+      <h3 class="section-anchor-pad" id="full-student-table">Full student table</h3>
+      <table class="student-table" style="margin-top:1rem">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Total</th>
+            <th>R&amp;W</th>
+            <th>Math</th>
+            <th>Biggest gap</th>
+            <th>Avg time</th>
+            <th>Flags</th>
+            <th>Completed</th>
+          </tr>
+        </thead>
+        <tbody id="student-rows"></tbody>
+      </table>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
+const SUBSECTIONS = {
+  rw: ['Information & Ideas','Craft & Structure','Expression of Ideas','Standard English Conventions'],
+  math: ['Algebra','Advanced Math','Problem Solving & Data','Geometry & Trigonometry']
+};
+const Q_PLAN = [
+  {section:'rw',  sub:'Information & Ideas',            diff:'medium'},
+  {section:'math',sub:'Algebra',                        diff:'medium'},
+  {section:'rw',  sub:'Craft & Structure',              diff:'medium'},
+  {section:'math',sub:'Problem Solving & Data',         diff:'medium'},
+  {section:'rw',  sub:'Standard English Conventions',   diff:'medium'},
+  {section:'math',sub:'Advanced Math',                  diff:'hard'},
+  {section:'rw',  sub:'Expression of Ideas',            diff:'hard'},
+  {section:'math',sub:'Geometry & Trigonometry',        diff:'medium'},
+  {section:'rw',  sub:'Information & Ideas',            diff:'hard'},
+  {section:'math',sub:'Algebra',                        diff:'hard'},
+];
+
+let currentRole = null;
+let classCode = '';
+let studentName = '';
+let currentQ = 0;
+let questions = [];
+let answers = [];
+let questionStartTime = 0;
+
+// ── Navigation ──
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  currentQ = 0; questions = []; answers = []; usedQuestionIds.clear();
+  document.getElementById('student-name-screen').style.display = 'block';
+  document.getElementById('student-q-screen').style.display = 'none';
+  document.getElementById('student-results').style.display = 'none';
+  document.getElementById('role-input-area').innerHTML = '';
+  showPage('page-home');
+}
+
+function showRoleInput(role) {
+  currentRole = role;
+  const area = document.getElementById('role-input-area');
+  if (role === 'student') {
+    area.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:0.5rem">
+        <p style="font-size:0.85rem;color:var(--muted)">Enter your class code from your teacher:</p>
+        <div class="class-input-wrap">
+          <input type="text" id="home-code" placeholder="e.g. CSUB01" maxlength="8" style="text-transform:uppercase">
+          <button class="btn" onclick="joinAsStudent()">Join →</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--muted)">Or <a href="?role=student&class=DEMO01" style="color:var(--accent)">use the demo class</a></p>
+      </div>`;
+  } else {
+    const newCode = Math.random().toString(36).substring(2,8).toUpperCase();
+    area.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:0.5rem">
+        <p style="font-size:0.85rem;color:var(--muted)">Enter an existing class code or create new:</p>
+        <div class="class-input-wrap">
+          <input type="text" id="home-code" placeholder="${newCode}" maxlength="8" style="text-transform:uppercase">
+          <button class="btn blue" onclick="joinAsTeacher()">Open dashboard →</button>
+        </div>
+        <button class="btn secondary" onclick="joinAsTeacherNew('${newCode}')" style="font-size:0.82rem">Create new class (${newCode})</button>
+      </div>`;
+  }
+}
+
+function joinAsStudent() {
+  const code = (document.getElementById('home-code').value || '').toUpperCase().trim();
+  if (!code) { alert('Enter a class code'); return; }
+  classCode = code;
+  document.getElementById('student-class-label').textContent = code;
+  showPage('page-student');
+}
+
+function joinAsTeacher() {
+  const code = (document.getElementById('home-code').value || document.getElementById('home-code').placeholder || '').toUpperCase().trim();
+  if (!code) { alert('Enter a class code'); return; }
+  classCode = code;
+  openTeacherDash();
+}
+
+function joinAsTeacherNew(code) {
+  classCode = code;
+  openTeacherDash();
+}
+
+function openTeacherDash() {
+  document.getElementById('dash-class-title').textContent = 'Class ' + classCode;
+  document.getElementById('dash-code').textContent = classCode;
+  showPage('page-teacher');
+  loadDashboard();
+  setInterval(loadDashboard, 10000);
+}
+
+// Handle URL params (so sharing ?role=student&class=ABC works)
+function handleURLParams() {
+  const p = new URLSearchParams(location.search);
+  if (p.get('role') === 'student' && p.get('class')) {
+    classCode = p.get('class').toUpperCase();
+    document.getElementById('student-class-label').textContent = classCode;
+    showPage('page-student');
+  } else if (p.get('role') === 'teacher' && p.get('class')) {
+    classCode = p.get('class').toUpperCase();
+    openTeacherDash();
+  }
+}
+
+// ── Student Diagnostic ──
+function startDiagnostic() {
+  const name = document.getElementById('student-name-input').value.trim();
+  if (!name) { alert('Please enter your name'); return; }
+  studentName = name;
+  document.getElementById('student-name-screen').style.display = 'none';
+  document.getElementById('student-q-screen').style.display = 'block';
+  loadQuestion();
+}
+
+let QUESTION_BANK = [];
+const QUESTION_BANK_URL = 'data/valley_sat_questions_with_math_images.min.json';
+const usedQuestionIds = new Set();
+const QUESTION_BANK_READY = loadQuestionBank();
+
+function canonicalText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+async function loadQuestionBank() {
+  try {
+    const response = await fetch(QUESTION_BANK_URL);
+    if (!response.ok) throw new Error(`Could not load ${QUESTION_BANK_URL}`);
+    const data = await response.json();
+    QUESTION_BANK = data.questions || data;
+    console.log(`Loaded ${QUESTION_BANK.length} SAT questions from database`);
+  } catch (err) {
+    console.error(err);
+    alert('Could not load the question database. Make sure data/valley_sat_questions_with_math_images.min.json is next to this HTML file.');
+    QUESTION_BANK = [];
+  }
+}
+
+async function loadQuestion() {
+  await QUESTION_BANK_READY;
+
+  const spec = Q_PLAN[currentQ];
+  const sectionLabel = spec.section === 'rw' ? 'Reading & Writing' : 'Math';
+  const tagClass = spec.section === 'rw' ? 'tag-rw' : 'tag-math';
+
+  document.getElementById('q-counter').textContent = `Question ${currentQ+1} of ${Q_PLAN.length}`;
+  const tag = document.getElementById('q-section-tag');
+  tag.textContent = sectionLabel;
+  tag.className = `q-section-tag ${tagClass}`;
+  document.getElementById('prog').style.width = `${((currentQ+1)/Q_PLAN.length)*100}%`;
+  document.getElementById('q-loading').style.display = 'flex';
+  document.getElementById('q-loading').querySelector('span').textContent = 'Loading question…';
+  document.getElementById('q-content').style.display = 'none';
+
+  const q = getDatabaseQuestion(spec);
+
+  // Keep the original database section, but use the app's shorter section labels for scoring.
+  q.originalSection = q.section;
+  q.section = spec.section;
+  q.sub = spec.sub;
+
+  questions[currentQ] = q;
+  questionStartTime = Date.now();
+  renderQuestion(q);
+}
+
+function getDatabaseQuestion(spec) {
+  if (!QUESTION_BANK.length) return getFallback(spec);
+
+  const wantedSection = spec.section === 'rw' ? 'reading and writing' : 'math';
+  const wantedSub = canonicalText(spec.sub);
+  const wantedDifficulty = canonicalText(spec.diff);
+
+  let pool = QUESTION_BANK.filter(q => canonicalText(q.section) === wantedSection);
+
+  // Try to match difficulty, but fall back if needed.
+  const diffPool = pool.filter(q => canonicalText(q.difficulty) === wantedDifficulty);
+  if (diffPool.length) pool = diffPool;
+
+  // Try to match the planned domain/subsection.
+  const subPool = pool.filter(q => {
+    const domain = canonicalText(q.domain);
+    const skill = canonicalText(q.skill);
+    return domain.includes(wantedSub) || wantedSub.includes(domain) || skill.includes(wantedSub) || wantedSub.includes(skill);
+  });
+  if (subPool.length) pool = subPool;
+
+  // Avoid repeats during the same diagnostic if possible.
+  const unusedPool = pool.filter(q => !usedQuestionIds.has(q.id));
+  if (unusedPool.length) pool = unusedPool;
+
+  if (!pool.length) pool = QUESTION_BANK.filter(q => canonicalText(q.section) === wantedSection);
+  if (!pool.length) return getFallback(spec);
+
+  const picked = {...pool[Math.floor(Math.random() * pool.length)]};
+  if (picked.id) usedQuestionIds.add(picked.id);
+  return picked;
+}
+
+function normalizeChoices(choices) {
+  if (!choices) return [];
+
+  if (Array.isArray(choices)) {
+    return choices
+      .filter(text => String(text || '').trim())
+      .map((text, i) => {
+        const raw = String(text).trim();
+        const match = raw.match(/^([A-D])\.?\s*(.*)$/i);
+        return {
+          letter: match ? match[1].toUpperCase() : String.fromCharCode(65 + i),
+          text: match ? `${match[1].toUpperCase()}. ${match[2]}` : `${String.fromCharCode(65 + i)}. ${raw}`
+        };
+      });
+  }
+
+  return Object.entries(choices)
+    .filter(([, text]) => String(text || '').trim())
+    .map(([letter, text]) => ({
+      letter: String(letter).trim().charAt(0).toUpperCase(),
+      text: `${String(letter).trim().charAt(0).toUpperCase()}. ${text}`
+    }));
+}
+
+function renderQuestion(q) {
+  document.getElementById('q-loading').style.display = 'none';
+  document.getElementById('q-content').style.display = 'block';
+  document.getElementById('explanation').style.display = 'none';
+  document.getElementById('next-btn').disabled = true;
+  const confidenceCard = document.getElementById('confidence-card');
+  if (confidenceCard) confidenceCard.style.display = 'none';
+  document.querySelectorAll('.confidence-btn').forEach(b => b.classList.remove('selected'));
+
+  const passEl = document.getElementById('q-passage');
+  const imgWrap = document.getElementById('q-image-wrap');
+  const imgEl = document.getElementById('q-image');
+  const qTextEl = document.getElementById('q-text');
+  const grid = document.getElementById('answers');
+
+  if (q.passage) {
+    passEl.textContent = q.passage;
+    passEl.style.display = 'block';
+  } else {
+    passEl.style.display = 'none';
+  }
+
+  // Math questions use a cropped image so equations and graphs display correctly.
+  const imagePath = q.image || q.questionImage || '';
+  if (imagePath) {
+    imgEl.src = imagePath;
+    imgEl.alt = `SAT question ${q.id || ''}`.trim();
+    imgWrap.style.display = 'block';
+
+    // Avoid duplicating broken extracted math text under the image.
+    qTextEl.textContent = '';
+    qTextEl.style.display = 'none';
+  } else {
+    imgWrap.style.display = 'none';
+    imgEl.removeAttribute('src');
+    qTextEl.textContent = q.question || '';
+    qTextEl.style.display = 'block';
+  }
+
+  grid.innerHTML = '';
+  const choices = normalizeChoices(q.choices);
+
+  const correctLetter = String(q.correctAnswer || q.correct || '').trim().charAt(0).toUpperCase();
+  const isMultipleChoice = /^[A-D]$/.test(correctLetter);
+
+  // If the question is shown as an image, the image already contains the full
+  // answer choices, including equations/fractions. Use clean A/B/C/D buttons
+  // underneath so no extracted choice is missing or malformed.
+  if (imagePath && isMultipleChoice) {
+    ['A', 'B', 'C', 'D'].forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-btn choice-letter-only';
+      btn.textContent = letter;
+      btn.onclick = () => selectAnswer(letter, q);
+      grid.appendChild(btn);
+    });
+  } else if (choices.length) {
+    choices.forEach(choice => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-btn';
+      btn.textContent = choice.text;
+      btn.onclick = () => selectAnswer(choice.letter, q);
+      grid.appendChild(btn);
+    });
+  } else if (isMultipleChoice) {
+    ['A', 'B', 'C', 'D'].forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-btn choice-letter-only';
+      btn.textContent = letter;
+      btn.onclick = () => selectAnswer(letter, q);
+      grid.appendChild(btn);
+    });
+  } else {
+    // Student-produced response questions use a typed answer box.
+    const row = document.createElement('div');
+    row.className = 'free-response-row';
+    row.style.gridColumn = '1 / -1';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'free-response-input';
+    input.placeholder = 'Enter your answer';
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') selectFreeResponse(input.value, q);
+    });
+
+    const submit = document.createElement('button');
+    submit.className = 'btn';
+    submit.textContent = 'Submit';
+    submit.onclick = () => selectFreeResponse(input.value, q);
+
+    row.appendChild(input);
+    row.appendChild(submit);
+    grid.appendChild(row);
+    setTimeout(() => input.focus(), 50);
+  }
+}
+
+function selectAnswer(selectedLetter, q) {
+  document.querySelectorAll('.answer-btn').forEach(b => b.onclick = null);
+
+  const correctLetter = String(q.correctAnswer || q.correct || '').trim().charAt(0).toUpperCase();
+  const buttons = document.querySelectorAll('.answer-btn');
+
+  buttons.forEach((b) => {
+    const buttonLetter = b.textContent.trim().charAt(0).toUpperCase();
+    if (buttonLetter === correctLetter) b.classList.add('correct');
+    else if (buttonLetter === selectedLetter && selectedLetter !== correctLetter) b.classList.add('incorrect');
+  });
+
+  const ok = selectedLetter === correctLetter;
+  finishAnswer(ok, q, selectedLetter);
+}
+
+function parseAnswerNumber(value) {
+  const s = String(value || '').trim().replace(/^\+/, '');
+  if (!s) return NaN;
+  if (/^-?\d+(\.\d+)?\s*\/\s*-?\d+(\.\d+)?$/.test(s)) {
+    const [a, b] = s.split('/').map(Number);
+    return b === 0 ? NaN : a / b;
+  }
+  const n = Number(s.replace(/,/g, ''));
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function isCorrectFreeResponse(userAnswer, correctAnswer) {
+  const userRaw = String(userAnswer || '').trim();
+  const correctRaw = String(correctAnswer || '').trim();
+  if (!userRaw || !correctRaw) return false;
+
+  const userClean = userRaw.toLowerCase().replace(/\s+/g, '');
+  const accepted = correctRaw.split(/,|\bor\b/i).map(s => s.trim()).filter(Boolean);
+
+  for (const answer of accepted) {
+    const answerClean = answer.toLowerCase().replace(/\s+/g, '').replace(/\.$/, '');
+    if (userClean === answerClean) return true;
+
+    const userNum = parseAnswerNumber(userClean);
+    const answerNum = parseAnswerNumber(answerClean);
+    if (Number.isFinite(userNum) && Number.isFinite(answerNum)) {
+      const tolerance = Math.max(0.001, Math.abs(answerNum) * 0.0005);
+      if (Math.abs(userNum - answerNum) <= tolerance) return true;
+    }
+  }
+  return false;
+}
+
+function selectFreeResponse(userAnswer, q) {
+  const input = document.getElementById('free-response-input');
+  if (!String(userAnswer || '').trim()) {
+    alert('Enter an answer first.');
+    return;
+  }
+  if (input) input.disabled = true;
+  document.querySelectorAll('.free-response-row .btn').forEach(b => b.disabled = true);
+  const ok = isCorrectFreeResponse(userAnswer, q.correctAnswer || q.correct || '');
+  finishAnswer(ok, q, userAnswer);
+}
+
+function getMistakeType(q, ok) {
+  if (ok) return 'Correct';
+  const skill = canonicalText(q.skill || q.sub || q.domain);
+  const domain = canonicalText(q.domain || q.sub);
+  if (domain.includes('algebra') || skill.includes('linear') || skill.includes('equation') || skill.includes('system')) return 'Algebra setup error';
+  if (domain.includes('advanced math') || skill.includes('quadratic') || skill.includes('function') || skill.includes('polynomial')) return 'Function/equation manipulation';
+  if (domain.includes('problem solving') || domain.includes('data') || skill.includes('graph') || skill.includes('table') || skill.includes('data')) return 'Graph/table interpretation';
+  if (domain.includes('geometry') || skill.includes('volume') || skill.includes('angle') || skill.includes('triangle')) return 'Formula or geometry concept';
+  if (skill.includes('command of evidence') || skill.includes('evidence')) return 'Evidence mismatch';
+  if (skill.includes('inference') || skill.includes('central') || skill.includes('details')) return 'Main idea/detail confusion';
+  if (skill.includes('words') || skill.includes('vocabulary')) return 'Vocabulary/context issue';
+  if (skill.includes('transitions') || skill.includes('boundaries') || skill.includes('form')) return 'Grammar/rhetorical rule';
+  if (canonicalText(q.section).includes('rw') || canonicalText(q.originalSection).includes('reading')) return 'Reading/writing reasoning error';
+  return 'Concept gap';
+}
+
+function finishAnswer(ok, q, userAnswer='') {
+  const elapsed = questionStartTime ? Math.round((Date.now() - questionStartTime) / 1000) : 0;
+  const correctAnswer = q.correctAnswer || q.correct || '';
+  answers[currentQ] = {
+    correct: ok,
+    section: q.section,
+    sub: q.sub,
+    questionId: q.id || '',
+    domain: q.domain || q.sub || '',
+    skill: q.skill || q.sub || '',
+    difficulty: q.difficulty || '',
+    userAnswer: String(userAnswer || '').trim(),
+    correctAnswer: String(correctAnswer || '').trim(),
+    timeSeconds: elapsed,
+    confidence: '',
+    mistakeType: getMistakeType(q, ok),
+    imageReliant: Boolean(q.imageReliant || q.image || q.questionImage),
+    translationEligible: q.translationEligible !== false
+  };
+
+  const expEl = document.getElementById('explanation');
+  const explanation = q.rationale || q.explanation || '';
+  const correctLine = correctAnswer ? `Correct answer: ${correctAnswer}. ` : '';
+  expEl.textContent = (ok ? '✓ Correct. ' : '✗ Incorrect. ') + correctLine + explanation;
+  expEl.style.display = 'block';
+
+  const conf = document.getElementById('confidence-card');
+  if (conf) conf.style.display = 'block';
+  document.getElementById('next-btn').disabled = true;
+}
+
+function setConfidence(level) {
+  if (!answers[currentQ]) return;
+  answers[currentQ].confidence = level;
+  document.querySelectorAll('.confidence-btn').forEach(b => {
+    b.classList.toggle('selected', b.textContent.trim() === level);
+  });
+  document.getElementById('next-btn').disabled = false;
+}
+
+async function nextQuestion() {
+  currentQ++;
+  if (currentQ >= Q_PLAN.length) await showResults();
+  else loadQuestion();
+}
+
+async function showResults() {
+  document.getElementById('student-q-screen').style.display = 'none';
+  document.getElementById('student-results').style.display = 'block';
+
+  // Compute scores
+  const subMap = {};
+  answers.forEach(a => {
+    if (!subMap[a.sub]) subMap[a.sub] = {correct:0,total:0};
+    subMap[a.sub].total++;
+    if (a.correct) subMap[a.sub].correct++;
+  });
+
+  const rwA = answers.filter(a=>a.section==='rw');
+  const mA  = answers.filter(a=>a.section==='math');
+  const rwPct = rwA.length ? rwA.filter(a=>a.correct).length/rwA.length : 0.5;
+  const mPct  = mA.length  ? mA.filter(a=>a.correct).length/mA.length  : 0.5;
+  const rwScore   = Math.round(200 + rwPct*600);
+  const mathScore = Math.round(200 + mPct*600);
+  const total = rwScore + mathScore;
+
+  document.getElementById('r-total').textContent = total;
+  document.getElementById('r-rw').textContent = rwScore;
+  document.getElementById('r-math').textContent = mathScore;
+  document.getElementById('r-range').textContent = `Range: ${total-60}–${total+60}`;
+
+  // All subsection scores (fill missing with 0.5 default)
+  const allSubs = {};
+  [...SUBSECTIONS.rw, ...SUBSECTIONS.math].forEach(s => {
+    const d = subMap[s] || {correct:0,total:0};
+    allSubs[s] = d.total > 0 ? d.correct/d.total : 0.5;
+  });
+
+  // Gap bars
+  const gapsEl = document.getElementById('r-gaps');
+  gapsEl.innerHTML = '';
+  Object.entries(allSubs).forEach(([sub, pct]) => {
+    const p = Math.round(pct*100);
+    const cls = p>=70?'bar-good':p>=40?'bar-ok':'bar-low';
+    gapsEl.innerHTML += `<div class="gap-item">
+      <div class="gap-label-row"><span class="gap-label">${sub}</span><span class="gap-pct">${p}%</span></div>
+      <div class="gap-track"><div class="gap-bar ${cls}" style="width:0%" data-w="${p}%"></div></div>
+    </div>`;
+  });
+  setTimeout(()=>{ document.querySelectorAll('.gap-bar').forEach(b=>b.style.width=b.dataset.w); }, 100);
+
+  // Priorities
+  const sorted = Object.entries(allSubs).sort((a,b)=>a[1]-b[1]);
+  const prEl = document.getElementById('r-priorities');
+  prEl.innerHTML = '';
+  sorted.slice(0,3).forEach(([sub,pct],i) => {
+    const p = Math.round(pct*100);
+    const tip = p<40?'Start with foundational practice — 30 min/day this week.':p<70?'Review core concepts and do 2–3 targeted practice sets.':'Polish with timed practice for speed.';
+    prEl.innerHTML += `<div class="priority-item">
+      <div class="pnum pnum-${i+1}">${i+1}</div>
+      <div><div class="priority-name">${sub}</div><div class="priority-tip">${tip}</div></div>
+    </div>`;
+  });
+
+  // Save to localStorage
+  const result = {
+    name: studentName,
+    total, rwScore, mathScore,
+    subScores: allSubs,
+    topGap: sorted[0][0],
+    avgTimeSeconds: Math.round(answers.reduce((sum,a)=>sum+(a.timeSeconds||0),0) / Math.max(answers.length,1)),
+    highConfidenceWrong: answers.filter(a=>!a.correct && a.confidence==='High').length,
+    lowConfidenceCorrect: answers.filter(a=>a.correct && a.confidence==='Low').length,
+    detailedAnswers: answers,
+    completedAt: new Date().toISOString()
+  };
+  const key = `vsp_class_${classCode}`;
+  const existing = JSON.parse(localStorage.getItem(key) || '[]');
+  // Remove old entry for same name
+  const updated = existing.filter(r => r.name !== studentName);
+  updated.push(result);
+  localStorage.setItem(key, JSON.stringify(updated));
+}
+
+// ── Teacher Dashboard ──
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+
+function getClassResults() {
+  const key = `vsp_class_${classCode}`;
+  return JSON.parse(localStorage.getItem(key) || '[]');
+}
+
+function pctClass(score) {
+  return score >= 0.70 ? 'badge-good' : score >= 0.50 ? 'badge-warn' : 'badge-danger';
+}
+
+function getAllDetailedAnswers(results) {
+  return results.flatMap(r => (r.detailedAnswers || []).map((a, i) => ({...a, student: r.name, qNum: i + 1, total: r.total})));
+}
+
+function getSkillStats(results) {
+  const stats = {};
+  getAllDetailedAnswers(results).forEach(a => {
+    const key = a.skill || a.sub || a.domain || 'Unknown';
+    if (!stats[key]) stats[key] = {correct:0,total:0, wrong:0, times:[], highConfidenceWrong:0, lowConfidenceCorrect:0};
+    stats[key].total++;
+    if (a.correct) stats[key].correct++; else stats[key].wrong++;
+    stats[key].times.push(a.timeSeconds || 0);
+    if (!a.correct && a.confidence === 'High') stats[key].highConfidenceWrong++;
+    if (a.correct && a.confidence === 'Low') stats[key].lowConfidenceCorrect++;
+  });
+  return Object.entries(stats).map(([skill, v]) => ({
+    skill,
+    accuracy: v.total ? v.correct / v.total : 0,
+    correct: v.correct,
+    wrong: v.wrong,
+    total: v.total,
+    avgTime: Math.round(v.times.reduce((a,b)=>a+b,0) / Math.max(v.times.length,1)),
+    highConfidenceWrong: v.highConfidenceWrong,
+    lowConfidenceCorrect: v.lowConfidenceCorrect
+  })).sort((a,b) => a.accuracy - b.accuracy || b.total - a.total);
+}
+
+function getSubsectionStats(results) {
+  const allSubs = [...SUBSECTIONS.rw, ...SUBSECTIONS.math];
+  const subAvg = {};
+  allSubs.forEach(s => {
+    const scores = results.map(r => r.subScores?.[s] ?? 0.5);
+    subAvg[s] = scores.reduce((a,b)=>a+b,0) / Math.max(scores.length,1);
+  });
+  return Object.entries(subAvg).sort((a,b)=>a[1]-b[1]);
+}
+
+function loadDashboard() {
+  const results = getClassResults();
+
+  document.getElementById('d-students').textContent = results.length;
+  document.getElementById('empty-dash').style.display = results.length ? 'none' : 'block';
+  document.getElementById('dash-content').style.display = results.length ? 'block' : 'none';
+
+  if (!results.length) return;
+
+  const avg = Math.round(results.reduce((s,r)=>s+r.total,0)/results.length);
+  document.getElementById('d-avg').textContent = avg;
+
+  const detailRows = getAllDetailedAnswers(results);
+  const avgTime = Math.round(detailRows.reduce((s,a)=>s+(a.timeSeconds||0),0) / Math.max(detailRows.length,1));
+  document.getElementById('d-time').textContent = avgTime + 's';
+
+  const subSorted = getSubsectionStats(results);
+  document.getElementById('d-lowest').textContent = subSorted[0][0].split(' ')[0];
+
+  const hmEl = document.getElementById('heatmap-rows');
+  hmEl.innerHTML = '';
+  subSorted.forEach(([sub, avg]) => {
+    const p = Math.round(avg*100);
+    const col = p>=70?'var(--accent)':p>=50?'var(--warn)':'var(--danger)';
+    hmEl.innerHTML += `<div class="heatmap-row">
+      <span class="heatmap-label">${escapeHTML(sub)}</span>
+      <div class="heatmap-bar-wrap">
+        <div class="heatmap-track"><div class="heatmap-fill" style="width:0%;background:${col}" data-w="${p}%"></div></div>
+        <span class="heatmap-count">${p}%</span>
+      </div>
+    </div>`;
+  });
+  setTimeout(()=>{ document.querySelectorAll('.heatmap-fill').forEach(b=>b.style.width=b.dataset.w); }, 100);
+
+  renderPrioritySkills(results);
+  renderMistakePatterns(results);
+  renderStudentGroups(results);
+  renderTimingConfidence(results);
+  renderStudentRows(results);
+}
+
+function renderPrioritySkills(results) {
+  const el = document.getElementById('teacher-priority-skills');
+  const skills = getSkillStats(results).slice(0, 4);
+  el.innerHTML = skills.map((s, i) => `<div class="mini-item">
+    <div><div class="mini-main">${i+1}. ${escapeHTML(s.skill)}</div><div class="mini-sub">${s.wrong} missed · avg ${s.avgTime}s/question</div></div>
+    <span class="badge-small ${pctClass(s.accuracy)}">${Math.round(s.accuracy*100)}%</span>
+  </div>`).join('') || '<div class="mini-sub">No skill data yet.</div>';
+}
+
+function renderMistakePatterns(results) {
+  const counts = {};
+  getAllDetailedAnswers(results).filter(a=>!a.correct).forEach(a => counts[a.mistakeType || 'Concept gap'] = (counts[a.mistakeType || 'Concept gap'] || 0) + 1);
+  const rows = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('mistake-patterns').innerHTML = rows.map(([name, count]) => `<div class="mini-item">
+    <div class="mini-main">${escapeHTML(name)}</div><span class="badge-small badge-danger">${count}</span>
+  </div>`).join('') || '<div class="mini-sub">No missed questions yet.</div>';
+}
+
+function renderStudentGroups(results) {
+  const groups = {};
+  results.forEach(r => {
+    const gap = r.topGap || 'General review';
+    if (!groups[gap]) groups[gap] = [];
+    groups[gap].push(r.name);
+  });
+  const rows = Object.entries(groups).sort((a,b)=>b[1].length-a[1].length).slice(0,4);
+  document.getElementById('student-groups').innerHTML = rows.map(([gap, names]) => `<div class="group-card">
+    <div class="group-name">${escapeHTML(gap)} group</div>
+    <div class="group-students">${escapeHTML(names.join(', '))}</div>
+  </div>`).join('') || '<div class="mini-sub">Groups will appear after students finish.</div>';
+}
+
+function renderTimingConfidence(results) {
+  const detail = getAllDetailedAnswers(results);
+  const fastWrong = detail.filter(a => !a.correct && (a.timeSeconds || 0) <= 25).length;
+  const slowWrong = detail.filter(a => !a.correct && (a.timeSeconds || 0) >= 90).length;
+  const highConfWrong = detail.filter(a => !a.correct && a.confidence === 'High').length;
+  const lowConfCorrect = detail.filter(a => a.correct && a.confidence === 'Low').length;
+  document.getElementById('timing-confidence').innerHTML = `
+    <div class="mini-item"><div><div class="mini-main">Fast wrong answers</div><div class="mini-sub">Possible careless errors or guessing</div></div><span class="badge-small badge-warn">${fastWrong}</span></div>
+    <div class="mini-item"><div><div class="mini-main">Slow wrong answers</div><div class="mini-sub">Possible concept gaps</div></div><span class="badge-small badge-danger">${slowWrong}</span></div>
+    <div class="mini-item"><div><div class="mini-main">High confidence + wrong</div><div class="mini-sub">Likely misconceptions</div></div><span class="badge-small badge-danger">${highConfWrong}</span></div>
+    <div class="mini-item"><div><div class="mini-main">Low confidence + correct</div><div class="mini-sub">Fragile understanding</div></div><span class="badge-small badge-warn">${lowConfCorrect}</span></div>`;
+}
+
+function renderStudentRows(results) {
+  const sorted = results.slice().sort((a,b)=>b.total-a.total);
+
+  // Full student table. The full question review table remains removed.
+  const tbody = document.getElementById('student-rows');
+  if (tbody) {
+    tbody.innerHTML = '';
+    sorted.forEach(r => {
+      const pillCls = r.total>=1200?'pill-high':r.total>=900?'pill-mid':'pill-low';
+      const date = new Date(r.completedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      const flags = `${r.highConfidenceWrong || 0} confident wrong · ${r.lowConfidenceCorrect || 0} unsure correct`;
+      tbody.innerHTML += `<tr>
+        <td>${escapeHTML(r.name)}</td>
+        <td><span class="score-pill ${pillCls}">${r.total}</span></td>
+        <td style="color:var(--accent2)">${r.rwScore}</td>
+        <td style="color:var(--purple)">${r.mathScore}</td>
+        <td style="font-size:0.78rem;color:var(--muted)">${escapeHTML(r.topGap || 'General review')}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted)">${r.avgTimeSeconds || '—'}s</td>
+        <td style="font-size:0.75rem;color:var(--muted)">${escapeHTML(flags)}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted)">${date}</td>
+      </tr>`;
+    });
+  }
+
+  // Main dropdown teacher view
+  const select = document.getElementById('student-data-select');
+  if (select) {
+    const previous = select.value;
+    select.innerHTML = sorted.map((r) => `<option value="${escapeHTML(r.name)}">${escapeHTML(r.name)} — ${r.total} total · Gap: ${escapeHTML(r.topGap || 'General review')}</option>`).join('');
+    if (previous && sorted.some(r => r.name === previous)) select.value = previous;
+    else if (sorted.length) select.value = sorted[0].name;
+    renderSelectedStudentData();
+  }
+}
+function renderSelectedStudentData() {
+  const select = document.getElementById('student-data-select');
+  const panel = document.getElementById('selected-student-panel');
+  if (!select || !panel) return;
+
+  const results = getClassResults();
+  const selectedName = select.value || (results[0] && results[0].name);
+  const r = results.find(x => x.name === selectedName);
+  if (!r) {
+    panel.innerHTML = '<div class="mini-sub">No student selected yet.</div>';
+    return;
+  }
+
+  const answers = r.detailedAnswers || [];
+  const correct = answers.filter(a => a.correct).length;
+  const wrong = answers.length - correct;
+  const date = new Date(r.completedAt).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  const pillCls = r.total>=1200?'pill-high':r.total>=900?'pill-mid':'pill-low';
+
+  const skillRows = Object.entries(r.subScores || {})
+    .sort((a,b)=>a[1]-b[1])
+    .slice(0,6)
+    .map(([skill, score]) => `<tr><td>${escapeHTML(skill)}</td><td>${Math.round(score*100)}%</td></tr>`).join('');
+
+  const missedRows = answers
+    .map((a, i) => ({...a, qNum:i+1}))
+    .filter(a => !a.correct)
+    .slice(0,8)
+    .map(a => `<tr><td>Q${a.qNum} · ${escapeHTML(a.skill || a.sub || a.domain || 'Unknown')}</td><td>${escapeHTML(a.mistakeType || 'Review')}</td></tr>`).join('');
+
+  const questionRows = answers
+    .map((a, i) => `<tr>
+      <td>Q${i+1} · ${escapeHTML(a.section || '')}</td>
+      <td>${a.correct ? '<span class="badge-small badge-good">Correct</span>' : '<span class="badge-small badge-danger">Wrong</span>'}</td>
+      <td>${escapeHTML(a.userAnswer || '—')} → ${escapeHTML(a.correctAnswer || '—')}</td>
+      <td>${a.timeSeconds || 0}s · ${escapeHTML(a.confidence || '—')}</td>
+    </tr>`).join('');
+
+  panel.innerHTML = `
+    <div class="student-detail-grid">
+      <div class="student-detail-stat"><div class="student-detail-value"><span class="score-pill ${pillCls}">${r.total}</span></div><div class="student-detail-label">Total score</div></div>
+      <div class="student-detail-stat"><div class="student-detail-value rw-color">${r.rwScore}</div><div class="student-detail-label">R&W</div></div>
+      <div class="student-detail-stat"><div class="student-detail-value math-color">${r.mathScore}</div><div class="student-detail-label">Math</div></div>
+      <div class="student-detail-stat"><div class="student-detail-value">${r.avgTimeSeconds || '—'}s</div><div class="student-detail-label">Avg time/question</div></div>
+    </div>
+    <div class="student-detail-body">
+      <div class="student-detail-panel">
+        <h4>Student summary</h4>
+        <table class="student-mini-table">
+          <tr><td>Name</td><td>${escapeHTML(r.name)}</td></tr>
+          <tr><td>Completed</td><td>${escapeHTML(date)}</td></tr>
+          <tr><td>Correct / Wrong</td><td>${correct} / ${wrong}</td></tr>
+          <tr><td>Biggest gap</td><td>${escapeHTML(r.topGap || 'General review')}</td></tr>
+          <tr><td>High confidence + wrong</td><td>${r.highConfidenceWrong || 0}</td></tr>
+          <tr><td>Low confidence + correct</td><td>${r.lowConfidenceCorrect || 0}</td></tr>
+        </table>
+      </div>
+      <div class="student-detail-panel">
+        <h4>Weakest skill areas</h4>
+        <table class="student-mini-table">${skillRows || '<tr><td>No skill data</td><td>—</td></tr>'}</table>
+      </div>
+      <div class="student-detail-panel">
+        <h4>Missed question patterns</h4>
+        <table class="student-mini-table">${missedRows || '<tr><td>No missed questions</td><td>Nice</td></tr>'}</table>
+      </div>
+      <div class="student-detail-panel">
+        <h4>Question-by-question</h4>
+        <div style="max-height:240px;overflow:auto">
+          <table class="student-mini-table">${questionRows || '<tr><td>No answers yet</td><td>—</td></tr>'}</table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderQuestionReview(results) {
+  // Removed from UI: question review table was intentionally deleted.
+  return;
+}
+
+function generatePracticeSet() {
+  const results = getClassResults();
+  if (!results.length) return alert('No student results yet. Click Load demo data or have students complete the diagnostic.');
+  const weakSkills = getSkillStats(results).slice(0,3).map(s=>s.skill);
+  const used = new Set();
+  const picks = [];
+  weakSkills.forEach(skill => {
+    const pool = QUESTION_BANK.filter(q => {
+      const text = canonicalText((q.skill || '') + ' ' + (q.domain || ''));
+      return text.includes(canonicalText(skill)) && q.translationEligible !== false && !q.imageReliant;
+    });
+    while (pool.length && picks.filter(p=>p.targetSkill===skill).length < 3) {
+      const q = pool[Math.floor(Math.random()*pool.length)];
+      if (!used.has(q.id)) { used.add(q.id); picks.push({...q, targetSkill: skill}); }
+      else break;
+    }
+  });
+  const el = document.getElementById('practice-set');
+  if (!picks.length) {
+    el.innerHTML = '<div class="mini-sub">Could not find enough text-based questions for the weakest skills in this sample JSON. Try using the full database.</div>';
+    return;
+  }
+  el.innerHTML = picks.map((q, i) => `<div class="practice-item">
+    <div class="qid">${i+1}. ${escapeHTML(q.id)} · ${escapeHTML(q.domain)} · ${escapeHTML(q.difficulty)}</div>
+    <div style="margin-top:4px;font-size:0.86rem">${escapeHTML(String(q.question || '').slice(0,220))}${String(q.question || '').length>220?'…':''}</div>
+    <div class="mini-sub">Target: ${escapeHTML(q.targetSkill)} · Answer: ${escapeHTML(q.correctAnswer)}</div>
+  </div>`).join('');
+}
+
+function getAIRecs() {
+  const results = getClassResults();
+  if (!results.length) { alert('No student results yet. Click Load demo data or have students complete the diagnostic.'); return; }
+  const textEl = document.getElementById('ai-text');
+  const weak = getSkillStats(results).slice(0,3);
+  const mistakeCounts = {};
+  getAllDetailedAnswers(results).filter(a=>!a.correct).forEach(a => mistakeCounts[a.mistakeType || 'Concept gap'] = (mistakeCounts[a.mistakeType || 'Concept gap'] || 0) + 1);
+  const topMistake = Object.entries(mistakeCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'mixed errors';
+  const classAvg = Math.round(results.reduce((s,r)=>s+r.total,0)/results.length);
+  textEl.style.color = 'var(--text)';
+  textEl.style.fontStyle = 'normal';
+  textEl.textContent = `1. Start with ${weak[0]?.skill || 'the weakest skill'} (${Math.round((weak[0]?.accuracy || 0)*100)}% accuracy). Use 10 minutes of direct review, then 15 minutes of guided examples, then 10 minutes of independent practice.
+
+2. Pull a small group for students whose top gap matches ${weak[0]?.skill || 'the weakest skill'}. Keep the rest of the class on mixed review.
+
+3. Watch for ${topMistake}. These misses usually need students to explain why the wrong answer is tempting, not just find the right answer.
+
+4. Class average is ${classAvg}/1600. After the mini-lesson, assign the generated practice set and retest only the weakest 2 skills.`;
+}
+
+
+
+function scrollToDiagnostic(id) {
+  const el = document.getElementById(id) || document.getElementById(id + '-card') || document.getElementById('student-groups-card');
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function loadDemoResults() {
+  try {
+    if (!classCode || !String(classCode).trim()) {
+      classCode = 'DEMO01';
+    }
+    classCode = String(classCode).toUpperCase().trim();
+
+    const titleEl = document.getElementById('dash-class-title');
+    const codeEl = document.getElementById('dash-code');
+    if (titleEl) titleEl.textContent = 'Class ' + classCode;
+    if (codeEl) codeEl.textContent = classCode;
+
+    const now = Date.now();
+    const demo = [
+      makeDemoStudent('Maya', 1180, 620, 560, ['Algebra','Information & Ideas'], now - 1000*60*13),
+      makeDemoStudent('Luis', 960, 500, 460, ['Geometry & Trigonometry','Command of Evidence'], now - 1000*60*9),
+      makeDemoStudent('Ari', 1320, 680, 640, ['Advanced Math','Craft & Structure'], now - 1000*60*5),
+      makeDemoStudent('Sam', 840, 430, 410, ['Expression of Ideas','Problem Solving & Data'], now - 1000*60*2)
+    ];
+
+    localStorage.setItem(`vsp_class_${classCode}`, JSON.stringify(demo));
+
+    // Force the dashboard to reveal and re-render immediately.
+    const empty = document.getElementById('empty-dash');
+    const content = document.getElementById('dash-content');
+    if (empty) empty.style.display = 'none';
+    if (content) content.style.display = 'block';
+
+    loadDashboard();
+    alert(`Demo data loaded for class ${classCode}. You should now see 4 demo students.`);
+  } catch (err) {
+    console.error('Load demo data failed:', err);
+    alert('Demo data failed to load. Open DevTools Console for details: ' + err.message);
+  }
+}
+
+function makeDemoStudent(name, total, rwScore, mathScore, gaps, completedAt) {
+  const demoSkills = ['Information & Ideas','Craft & Structure','Expression of Ideas','Standard English Conventions','Algebra','Advanced Math','Problem Solving & Data','Geometry & Trigonometry'];
+  const detailedAnswers = Array.from({length:10}, (_, i) => {
+    const skill = demoSkills[i % demoSkills.length];
+    const weak = gaps.some(g => skill.includes(g) || g.includes(skill));
+    const correct = weak ? i % 3 === 0 : i % 4 !== 0;
+    return {
+      questionId: `demo-${name}-${i+1}`,
+      section: i % 2 === 0 ? 'Reading and Writing' : 'Math',
+      domain: skill,
+      skill,
+      sub: skill,
+      difficulty: i > 6 ? 'Hard' : 'Medium',
+      userAnswer: correct ? 'C' : 'B',
+      correctAnswer: 'C',
+      correct,
+      timeSeconds: weak ? 80 + i*4 : 30 + i*3,
+      confidence: correct ? (i % 3 === 0 ? 'Low' : 'Medium') : (i % 2 === 0 ? 'High' : 'Medium'),
+      mistakeType: correct ? '' : getMistakeType({skill, domain: skill}, false)
+    };
+  });
+  const subScores = {};
+  demoSkills.forEach(s => {
+    const related = detailedAnswers.filter(a => a.skill === s);
+    subScores[s] = related.length ? related.filter(a=>a.correct).length / related.length : 0.5;
+  });
+  const avgTimeSeconds = Math.round(detailedAnswers.reduce((s,a)=>s+a.timeSeconds,0)/detailedAnswers.length);
+  return {
+    name, total, rwScore, mathScore, subScores,
+    topGap: gaps[0], completedAt: new Date(completedAt).toISOString(),
+    detailedAnswers, avgTimeSeconds,
+    highConfidenceWrong: detailedAnswers.filter(a=>!a.correct && a.confidence==='High').length,
+    lowConfidenceCorrect: detailedAnswers.filter(a=>a.correct && a.confidence==='Low').length
+  };
+}
+
+function clearClassResults() {
+  if (!confirm('Clear all saved results for this class code?')) return;
+  localStorage.removeItem(`vsp_class_${classCode}`);
+  loadDashboard();
+}
+
+// Boot
+QUESTION_BANK_READY.then(() => {
+  handleURLParams();
+});
+</script>
+</body>
+</html>
