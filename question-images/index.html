@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Valley SAT Tutor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0c0e1a;color:#e2e4f0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px 60px}
+h1{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center}
+header p{color:#555880;font-size:.87rem;text-align:center;margin-top:4px;margin-bottom:24px}
+
+.tabs{display:flex;gap:6px;background:#13162a;border-radius:12px;padding:5px;width:100%;max-width:720px;margin-bottom:18px}
+.tab{flex:1;padding:9px;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;background:transparent;color:#555880;transition:all .2s}
+.tab.on{background:linear-gradient(135deg,#6c63ff,#a78bfa);color:#fff}
+
+.prog-wrap{width:100%;max-width:720px;margin-bottom:8px}
+.prog-bg{background:#1a1d30;border-radius:99px;height:5px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#6c63ff,#a78bfa);border-radius:99px;transition:width .5s}
+.prog-row{display:flex;justify-content:space-between;margin-top:6px}
+.prog-lbl{font-size:.76rem;color:#40435e}
+.score-pill{background:#1a1d30;border:1px solid #2a2d45;border-radius:99px;padding:2px 12px;font-size:.76rem;color:#a78bfa;font-weight:700}
+
+.card{background:#161929;border:1px solid #222440;border-radius:18px;padding:28px;max-width:720px;width:100%;box-shadow:0 10px 50px rgba(0,0,0,.6)}
+.qmeta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.pill{border-radius:99px;padding:3px 12px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.p-sec{background:#1e2240;border:1px solid #363a70;color:#818cf8}
+.p-dom{background:#1c2535;border:1px solid #2a3a58;color:#60a5fa}
+.p-skl{background:#1e2830;border:1px solid #2a4040;color:#34d399}
+.p-dif{background:#201e35;border:1px solid #3a3555;color:#c084fc}
+
+.qimg{width:100%;max-width:640px;border-radius:10px;border:1px solid #222440;margin-bottom:16px;display:block}
+.qtxt{font-size:.97rem;line-height:1.78;color:#ced1e8;margin-bottom:20px;white-space:pre-wrap}
+
+/* multiple choice */
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:12px;background:#0f1120;border:1.5px solid #222440;border-radius:12px;padding:12px 15px;cursor:pointer;transition:all .18s;color:#c2c5e0;font-size:.91rem;line-height:1.6;width:100%;text-align:left}
+.opt:hover:not(:disabled){border-color:#6c63ff;background:#1a1c35;color:#fff}
+.opt:disabled{cursor:default}
+.ltr{min-width:27px;height:27px;border-radius:7px;background:#1a1d30;border:1px solid #303560;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:#666a90;flex-shrink:0;transition:all .18s}
+.opt.ok{border-color:#22c55e!important;background:#0b2416!important;color:#86efac!important}
+.opt.ok .ltr{background:#22c55e;border-color:#22c55e;color:#fff}
+.opt.bad{border-color:#f87171!important;background:#2a0d0d!important;color:#fca5a5!important}
+.opt.bad .ltr{background:#f87171;border-color:#f87171;color:#fff}
+.opt.show{border-color:#22c55e!important;background:#0b2416!important;color:#86efac!important;opacity:.55}
+.opt.show .ltr{background:#22c55e;border-color:#22c55e;color:#fff}
+
+/* image-choice grid for math */
+.imgchoices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ichoice{display:flex;align-items:center;gap:10px;background:#0f1120;border:1.5px solid #222440;border-radius:12px;padding:11px 14px;cursor:pointer;transition:all .18s;color:#c2c5e0;font-size:.91rem;width:100%;text-align:left}
+.ichoice:hover:not(:disabled){border-color:#6c63ff;background:#1a1c35}
+.ichoice:disabled{cursor:default}
+.ichoice.ok{border-color:#22c55e!important;background:#0b2416!important;color:#86efac!important}
+.ichoice.ok .ltr{background:#22c55e;border-color:#22c55e;color:#fff}
+.ichoice.bad{border-color:#f87171!important;background:#2a0d0d!important;color:#fca5a5!important}
+.ichoice.bad .ltr{background:#f87171;border-color:#f87171;color:#fff}
+.ichoice.show{border-color:#22c55e!important;background:#0b2416!important;color:#86efac!important;opacity:.55}
+.ichoice.show .ltr{background:#22c55e;border-color:#22c55e;color:#fff}
+
+/* free response */
+.frlabel{font-size:.86rem;color:#666a90;margin-bottom:8px}
+.frrow{display:flex;gap:10px;align-items:center}
+.frinput{background:#0f1120;border:1.5px solid #222440;border-radius:10px;padding:10px 15px;color:#e2e4f0;font-size:1rem;width:160px;outline:none;transition:border .2s}
+.frinput:focus{border-color:#6c63ff}
+.frinput.ok{border-color:#22c55e;background:#0b2416;color:#86efac}
+.frinput.bad{border-color:#f87171;background:#2a0d0d;color:#fca5a5}
+.frbtn{padding:10px 20px;background:#6c63ff;color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;transition:opacity .18s}
+.frbtn:hover{opacity:.85}
+.frbtn:disabled{opacity:.35;cursor:default}
+
+/* feedback */
+.fb{margin-top:16px;border-radius:12px;padding:16px 18px;display:none;animation:up .3s ease}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fb-c{background:#091e12;border:1px solid #22c55e30}
+.fb-w{background:#1a0b0b;border:1px solid #f8717130}
+.fbicon{font-size:1.4rem;margin-bottom:4px}
+.fbtitle{font-weight:800;font-size:.93rem;margin-bottom:4px}
+.fb-c .fbtitle{color:#4ade80}
+.fb-w .fbtitle{color:#fb923c}
+.fbbody{font-size:.87rem;line-height:1.65;color:#9aa0bc}
+.ratbtn{margin-top:9px;background:none;border:none;color:#6c63ff;font-size:.79rem;cursor:pointer;padding:0;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.ratbox{display:none;margin-top:8px;background:#0d0f1e;border:1px solid #222440;border-radius:8px;padding:12px 14px;font-size:.81rem;line-height:1.6;color:#60658a}
+
+.nextbtn{margin-top:16px;width:100%;padding:13px;background:linear-gradient(135deg,#6c63ff,#a78bfa);color:#fff;border:none;border-radius:12px;font-size:.93rem;font-weight:700;cursor:pointer;display:none;transition:opacity .18s}
+.nextbtn:hover{opacity:.87}
+
+/* summary */
+.summary{background:#161929;border:1px solid #222440;border-radius:18px;padding:44px 32px;max-width:720px;width:100%;text-align:center;display:none;animation:up .4s ease}
+.ring{width:124px;height:124px;border-radius:50%;border:6px solid #6c63ff;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:20px auto;box-shadow:0 0 30px #6c63ff55}
+.ring span{font-size:1.9rem;font-weight:800;color:#a78bfa}
+.ring small{font-size:.72rem;color:#40435e;margin-top:2px}
+.bdown{display:flex;gap:14px;justify-content:center;margin:18px 0 22px}
+.bbox{background:#0f1120;border:1px solid #222440;border-radius:12px;padding:13px 22px}
+.bnum{font-size:1.45rem;font-weight:800;color:#a78bfa}
+.blbl{font-size:.73rem;color:#40435e;margin-top:2px}
+.smsg{font-size:.91rem;color:#666a90;max-width:420px;margin:0 auto 22px;line-height:1.65}
+.restbtn{padding:12px 36px;background:linear-gradient(135deg,#6c63ff,#a78bfa);color:#fff;border:none;border-radius:12px;font-size:.93rem;font-weight:700;cursor:pointer;transition:opacity .18s}
+.restbtn:hover{opacity:.87}
+
+@media(max-width:500px){.imgchoices{grid-template-columns:1fr}.bdown{flex-direction:column;align-items:center}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Valley SAT Tutor</h1>
+  <p>40 real questions · Personalized feedback on every answer</p>
+</header>
+
+<div class="tabs">
+  <button class="tab on" id="tabRW" onclick="switchTab('Reading and Writing')">📖 Reading &amp; Writing</button>
+  <button class="tab" id="tabM" onclick="switchTab('Math')">🔢 Math</button>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  <div class="prog-row">
+    <span class="prog-lbl" id="progLbl">Question 1</span>
+    <span class="score-pill" id="scorePill">Score: 0 / 0</span>
+  </div>
+</div>
+
+<div class="card" id="qCard">
+  <div class="qmeta" id="qMeta"></div>
+  <img class="qimg" id="qImg" src="" alt="" style="display:none"/>
+  <div class="qtxt" id="qTxt"></div>
+  <div id="answerArea"></div>
+  <div class="fb" id="fbPanel">
+    <div class="fbicon" id="fbIcon"></div>
+    <div class="fbtitle" id="fbTitle"></div>
+    <div class="fbbody" id="fbBody"></div>
+    <button class="ratbtn" id="ratBtn" onclick="toggleRat()">Show full explanation</button>
+    <div class="ratbox" id="ratBox"></div>
+  </div>
+  <button class="nextbtn" id="nextBtn" onclick="advance()">Next Question →</button>
+</div>
+
+<div class="summary" id="summary">
+  <h2>Quiz Complete! 🎉</h2>
+  <div class="ring"><span id="finalScore"></span><small>correct</small></div>
+  <div class="bdown">
+    <div class="bbox"><div class="bnum" id="rwScore">—</div><div class="blbl">Reading &amp; Writing</div></div>
+    <div class="bbox"><div class="bnum" id="mScore">—</div><div class="blbl">Math</div></div>
+  </div>
+  <p class="smsg" id="smsg"></p>
+  <button class="restbtn" onclick="restart()">Try Again</button>
+</div>
+
+<script>
+// ─── PRAISE POOL ───────────────────────────────────────────────────────────
+const PRAISE = [
+  {icon:"🎯",title:"Bullseye!",body:"Right on target. That kind of precision on test day is exactly what pushes scores into the top percentiles."},
+  {icon:"🌟",title:"Outstanding!",body:"You read this one perfectly. Clean reasoning, correct answer — that's the whole formula."},
+  {icon:"🚀",title:"Locked in!",body:"That's focused thinking. You cut through the noise and landed exactly where you needed to."},
+  {icon:"💡",title:"Sharp!",body:"You understood what the question was actually asking — not just what it seemed to be asking. That distinction wins points."},
+  {icon:"✨",title:"Flawless!",body:"Confident, correct, and clean. You made that look easy."},
+  {icon:"🏆",title:"Top-tier answer!",body:"This is the kind of accuracy that separates high scorers. Well done."},
+  {icon:"⚡",title:"Dialed in!",body:"Fast logic, right answer. You're in the zone."},
+  {icon:"🧠",title:"Big brain!",body:"You reasoned your way there — didn't guess, didn't rush. That's the whole game on the SAT."}
+];
+
+// ─── QUESTIONS ─────────────────────────────────────────────────────────────
+const QUESTIONS = [
+  // ── R&W 1 ──
+  {id:"d73a908a",section:"Reading and Writing",domain:"Information and Ideas",skill:"Central Ideas and Details",difficulty:"Medium",
+  question:"Believing that living in an impractical space can heighten awareness and even improve health, conceptual artists Madeline Gins and Shusaku Arakawa designed an apartment building in Japan to be more fanciful than functional. A kitchen counter is chest-high on one side and knee-high on the other; a ceiling has a door to nowhere. The effect is disorienting but invigorating: after four years there, filmmaker Nobu Yamaoka reported significant health benefits.\n\nWhich choice best states the main idea of the text?",
+  type:"mc",hasImage:false,
+  choices:{A:"Although inhabiting a home surrounded by fanciful features such as those designed by Gins and Arakawa can be rejuvenating, it is unsustainable.",B:"Designing disorienting spaces like those in the Gins and Arakawa building is the most effective way to create a physically stimulating environment.",C:"As a filmmaker, Yamaoka has long supported the designs of conceptual artists such as Gins and Arakawa.",D:"Although impractical, the design of the apartment building by Gins and Arakawa may improve the well-being of the building's residents."},
+  correct:"D",
+  feedback:{A:{type:"close",msg:"You caught that the design can be rejuvenating — that part is right. But 'unsustainable' is nowhere in the text. The passage doesn't raise the question of how long someone can live there beneficially."},B:{type:"medium",msg:"The text hints at benefits, but 'most effective way' is a superlative the passage never claims. Watch out for answer choices that overstate what the text actually says."},C:{type:"random",msg:"Yamaoka appears in exactly one sentence as evidence of health benefits. There's no suggestion anywhere that he's a long-term supporter of their broader work — that's completely invented."}},
+  rationale:"D is correct: the text describes an impractical design and notes that Yamaoka reported health benefits, suggesting the design may improve residents' well-being. A adds an unsupported 'unsustainable' claim. B overstates with 'most effective.' C misreads Yamaoka's role."},
+
+  // ── R&W 2 ──
+  {id:"ed314256",section:"Reading and Writing",domain:"Information and Ideas",skill:"Central Ideas and Details",difficulty:"Hard",
+  question:"The most recent iteration of the immersive theater experience Sleep No More, which premiered in New York City in 2011, transforms its performance space—a five-story warehouse—into a 1930s-era hotel. Audience members, who wander through the labyrinthine venue at their own pace and follow the actors as they play out simultaneous, interweaving narrative loops, confront the impossibility of experiencing the production in its entirety. The play's refusal of narrative coherence thus hinges on the sense of spatial fragmentation that the venue's immense and intricate layout generates.\n\nWhat does the text most strongly suggest about Sleep No More's use of its performance space?",
+  type:"mc",hasImage:false,
+  choices:{A:"The choice of a New York City venue likely enabled the play's creators to experiment with the use of theatrical space in a way that venues from earlier productions could not.",B:"Audience members likely find the experience of the play disappointing because they generally cannot make their way through the entire venue.",C:"The production's dependence on a particular performance environment would likely make it difficult to reproduce exactly in a different theatrical space.",D:"Audience members who navigate the space according to a recommended itinerary will likely have a better grasp of the play's narrative than audience members who depart from that itinerary."},
+  correct:"C",
+  feedback:{A:{type:"medium",msg:"The text credits the size of the venue — not its New York City location — for the spatial effect. Location and size are easy to conflate, but the text is specific about which one matters."},B:{type:"opposite",msg:"Flip this around. The text frames the inability to see the whole production as a deliberate and meaningful feature — not a source of disappointment. Not seeing everything is the point."},D:{type:"random",msg:"No itinerary is mentioned anywhere in the text. When a key detail doesn't exist in the passage, any answer built around it is a trap. Stay anchored to what the text actually says."}},
+  rationale:"C is correct: the production's effect depends entirely on the large, winding layout — another space couldn't replicate it. A wrongly credits location over size. B misreads incompleteness as disappointment. D invents an itinerary the text never mentions."},
+
+  // ── R&W 3 ──
+  {id:"8c1be131",section:"Reading and Writing",domain:"Information and Ideas",skill:"Central Ideas and Details",difficulty:"Medium",
+  question:"During the World War II era, some Mexican American women adopted a striking new look called pachuca style. They wore altered men's jackets or zoot suits (wide-legged, long-coated suits) and dramatic makeup, and they combed their hair into high, rounded shapes. Some people criticized pachuca style, saying it was dangerous and women should dress traditionally. But historians see things differently. They see pachuca style as a form of rebellion against the era's rigid social expectations for women. They say that it showed a desire for self-expression and freedom on the part of women who adopted the style.\n\nAccording to the text, how do historians view pachuca style?",
+  type:"mc",hasImage:false,
+  choices:{A:"They think that pachuca style was such a popular trend that it continues to influence fashion in the United States to the present day.",B:"They think that pachuca style was a way for some Mexican American women to express themselves and resist strict social expectations.",C:"They think that pachuca style was celebrated because it enabled some Mexican American women to show their support for the United States during World War II.",D:"They think that pachuca style was similar to other fashion trends that different groups of women adopted in the same period."},
+  correct:"B",
+  feedback:{A:{type:"random",msg:"The text describes pachuca style as a WWII-era phenomenon. Present-day influence on fashion isn't mentioned at all — that's a detail you brought in from outside the passage."},C:{type:"medium",msg:"The text says the style was about self-expression and rebellion against social expectations — not patriotism or support for the U.S. war effort. That's a plausible-sounding idea, but it's not in the passage."},D:{type:"random",msg:"The text doesn't compare pachuca style to any other fashion trends. It's the only style discussed. When a comparison doesn't exist in the passage, an answer built on that comparison is wrong."}},
+  rationale:"B is correct: historians explicitly describe pachuca style as rebellion against rigid social expectations, showing desire for self-expression and freedom. A adds unsupported present-day influence. C invents a patriotism angle. D creates a comparison the text never makes."},
+
+  // ── R&W 4 ──
