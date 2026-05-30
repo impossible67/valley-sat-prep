@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valley SAT Prep</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+/* --- CORE CSS --- */
+:root {
+  --bg: #0f0f11; --surface: #18181c; --surface2: #222228;
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+  --text: #f0efe8; --muted: #888880; --accent: #7ee8a2;
+  --accent2: #5bc4f5; --warn: #f5a623; --danger: #f55f5f;
+  --purple: #b59cf5; --radius: 12px; --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 2.4rem; letter-spacing: -0.02em; }
+h2 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.6rem; letter-spacing: -0.01em; }
+h3 { font-size: 0.8rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.mono { font-family: 'DM Mono', monospace; }
+
+/* --- LAYOUT & PAGES --- */
+.page { display: none; min-height: 100vh; }
+.page.active { display: flex; flex-direction: column; }
+.container { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem; flex: 1; }
+.container.wide { max-width: 900px; }
+
+/* --- HOME HERO & LOGIN --- */
+.home-hero { display: flex; flex-direction: column; justify-content: center; min-height: 100vh; padding: 3rem 2rem; max-width: 540px; margin: 0 auto; }
+.badge { display: inline-block; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(94,200,162,0.12); color: var(--accent); border: 1px solid rgba(94,200,162,0.25); border-radius: 99px; padding: 4px 14px; margin-bottom: 1.5rem; }
+.role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+.role-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem 1.25rem; cursor: pointer; transition: border-color 0.2s, transform 0.15s; text-align: left; }
+.role-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.role-card .role-icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
+.role-card .role-title { font-weight: 500; font-size: 1rem; margin-bottom: 0.25rem; }
+.role-card .role-desc { font-size: 0.82rem; color: var(--muted); }
+.class-input-wrap { display: flex; gap: 8px; }
+
+/* --- INPUTS & BUTTONS --- */
+input[type="text"], input[type="email"], input[type="password"] { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.65rem 1rem; color: var(--text); font-family: 'DM Mono', monospace; font-size: 1rem; outline: none; transition: border-color 0.2s; width: 100%; margin-bottom: 12px; }
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus { border-color: var(--accent); }
+.btn { background: var(--accent); color: #0a1a10; border: none; border-radius: var(--radius-sm); padding: 0.7rem 1.4rem; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: opacity 0.15s, transform 0.1s; white-space: nowrap; }
+.btn:hover { opacity: 0.88; }
+.btn.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn.blue { background: var(--accent2); color: #071520; }
+.btn.purple { background: var(--purple); color: #100a20; }
+
+/* --- NAV --- */
+nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: rgba(15,15,17,0.92); position: sticky; top: 0; z-index: 10; }
+.nav-brand { font-family: 'Fraunces', serif; font-weight: 300; font-size: 1.1rem; }
+
+/* --- QUIZ UI --- */
+.progress-wrap { margin-bottom: 1.5rem; }
+.progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.progress-track { height: 3px; background: var(--surface2); border-radius: 99px; }
+.progress-fill { height: 3px; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; }
+.q-section-tag { display: inline-block; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 99px; padding: 3px 12px; margin-bottom: 1.25rem; }
+.tag-rw { background: rgba(91,196,245,0.12); color: var(--accent2); border: 1px solid rgba(91,196,245,0.2); }
+.tag-math { background: rgba(181,156,245,0.12); color: var(--purple); border: 1px solid rgba(181,156,245,0.2); }
+.q-text { font-size: 1.05rem; margin-bottom: 1.25rem; line-height: 1.65; white-space: pre-wrap; }
+.answers { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 1rem; }
+.answer-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.85rem 1rem; font-size: 0.88rem; color: var(--text); cursor: pointer; text-align: left; line-height: 1.5; font-family: 'DM Sans', sans-serif; }
+.answer-btn:hover { border-color: var(--border2); background: var(--surface2); }
+.answer-btn.correct { border-color: var(--accent); background: rgba(126,232,162,0.08); color: var(--accent); }
+.answer-btn.incorrect { border-color: var(--danger); background: rgba(245,95,95,0.07); color: var(--danger); }
+.explanation { background: var(--surface2); border-radius: var(--radius-sm); padding: 0.85rem 1rem; font-size: 0.84rem; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; display: none; }
+.loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; color: var(--muted); font-size: 0.88rem; }
+
+/* --- AI TUTOR --- */
+.ai-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface); border: 1px solid rgba(181,156,245,0.22); border-radius: var(--radius-sm); padding: 0.8rem 1rem; margin-bottom: 1rem; }
+.switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background: var(--surface2); border: 1px solid var(--border2); transition: .2s; border-radius: 99px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; top: 3px; background: var(--muted); transition: .2s; border-radius: 50%; }
+.switch input:checked + .slider { background: rgba(181,156,245,0.2); border-color: rgba(181,156,245,0.55); }
+.switch input:checked + .slider:before { transform: translateX(20px); background: var(--purple); }
+.ai-panel { background: var(--surface); border: 1px solid rgba(181,156,245,0.2); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem; }
+
+/* --- DASHBOARD & RESULTS --- */
+.score-hero { text-align: center; padding: 2.5rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+.score-big { font-family: 'Fraunces', serif; font-weight: 600; font-size: 5rem; line-height: 1; color: var(--accent); letter-spacing: -0.03em; }
+.sub-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 2rem; }
+.sub-score-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; }
+.sub-score-val { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 300; }
+.rw-color { color: var(--accent2); } .math-color { color: var(--purple); }
+.dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 2rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; }
+.stat-val { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 300; margin-bottom: 2px; }
+.student-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+.student-table th { font-size: 0.72rem; text-transform: uppercase; color: var(--muted); padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+.student-table td { padding: 0.7rem 0.75rem; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+.code-display { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 0.6rem 1rem; font-family: 'DM Mono', monospace; font-size: 1.3rem; letter-spacing: 0.15em; color: var(--accent); display: inline-block; }
+.heatmap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem; }
+.heatmap-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.heatmap-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 99px; }
+.heatmap-fill { height: 8px; border-radius: 99px; transition: width 1s ease; }
+</style>
+</head>
+<body>
+
+<button id="lang-toggle-btn" class="btn secondary" onclick="toggleLanguage()" style="position: absolute; top: 1rem; right: 1rem; z-index: 100;">Español</button>
+
+<div class="page active" id="page-home">
+  <div class="home-hero">
+    <div class="badge">Hack the Valley · CSUB 2026</div>
+    <h1 data-i18n="heroTitle">Valley SAT Prep</h1>
+    <p data-i18n="heroSub" style="color: var(--muted); margin-bottom: 2rem;">AI-powered diagnostics for Central Valley classrooms.</p>
+    <div class="role-cards">
+      <div class="role-card" onclick="showRoleInput('student')">
+        <div class="role-icon">✏️</div>
+        <div class="role-title" data-i18n="studentRole">I'm a student</div>
+        <div class="role-desc" data-i18n="studentDesc">Take the diagnostic, see your gaps</div>
+      </div>
+      <div class="role-card" onclick="showRoleInput('teacher')">
+        <div class="role-icon">📊</div>
+        <div class="role-title" data-i18n="teacherRole">I'm a teacher</div>
+        <div class="role-desc" data-i18n="teacherDesc">See your class dashboard</div>
+      </div>
+    </div>
+    <div id="role-input-area"></div>
+  </div>
+</div>
+
+<div class="page" id="page-student">
+  <nav><span class="nav-brand" data-i18n="navBrand">Valley SAT Prep</span><span class="nav-class mono" id="student-class-label"></span></nav>
+  <div class="container">
+    
+    <div id="student-name-screen">
+      <br>
+      <h2 data-i18n="beforeStart">Before we start</h2>
+      <p style="color:var(--muted);margin:0.75rem 0 1.5rem" data-i18n="beforeDesc">Your results go to your teacher's class dashboard anonymously.</p>
+      <input type="text" id="student-name-input" placeholder="Your first name" data-i18n="firstNamePlaceholder">
+      <button class="btn" onclick="startDiagnostic()" data-i18n="startBtn">Start diagnostic →</button>
+    </div>
+    
+    <div id="student-q-screen" style="display:none">
+      <div class="ai-toggle-row">
+        <div>
+          <div style="font-weight:500;color:var(--text);font-size:0.9rem" data-i18n="aiTutorTitleTag">AI Tutor</div>
+          <div style="font-size: 0.82rem; color: var(--muted);" data-i18n="aiTutorDescTag">Hints only during the diagnostic.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="student-ai-toggle" checked onchange="setAIEnabled(this.checked)"><span class="slider"></span></label>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-top">
+          <span id="q-counter" style="font-size:0.8rem;color:var(--muted)">Question 1</span>
+          <span id="q-section-tag" class="q-section-tag tag-rw">Reading & Writing</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="prog" style="width:10%"></div></div>
+      </div>
+      
+      <div id="q-loading" class="loading"><span data-i18n="generating">Loading question...</span></div>
+      
+      <div id="q-content" style="display:none">
+        <p class="q-text" id="q-text"></p>
+        
+        <img id="q-image" style="display:none; max-width: 100%; margin-bottom: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        
+        <div class="answers" id="answers"></div>
+        <div class="explanation" id="explanation"></div>
+        
+        <div style="display:flex;gap:8px;margin:1rem 0;">
+          <button class="btn purple" id="tutor-toggle-btn" onclick="toggleTutor()" data-i18n="openTutorBtn">Open AI Tutor</button>
+          <button class="btn secondary" id="next-btn" disabled onclick="nextQuestion()" data-i18n="nextBtn">Next →</button>
+        </div>
+
+        <div id="ai-tutor-panel" class="ai-panel" style="display:none;">
+          <h3 style="margin-bottom:10px;" data-i18n="tutorTitle">AI SAT Tutor</h3>
+          <div id="chat-history" style="height:200px;overflow-y:auto;background:#111;padding:12px;border-radius:8px;margin-bottom:10px;font-size:0.9rem;"></div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="chat-input" data-i18n="askHint" placeholder="Ask for a hint..." style="margin:0;">
+            <button class="btn purple" id="chat-send-btn" onclick="sendTutorMessage()" data-i18n="sendBtn">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="student-results" style="display:none">
+      <div class="score-hero">
+        <div class="score-big" id="r-total">—</div>
+        <div style="color: var(--muted); font-size: 0.85rem;" data-i18n="predictedScore">predicted SAT score</div>
+      </div>
+      <div class="sub-scores">
+        <div class="sub-score-card"><div class="sub-score-val rw-color" id="r-rw">—</div><div style="font-size:0.78rem; color:var(--muted)" data-i18n="rwTitle">Reading & Writing</div></div>
+        <div class="sub-score-card"><div class="sub-score-val math-color" id="r-math">—</div><div style="font-size:0.78rem; color:var(--muted)" data-i18n="mathTitle">Math</div></div>
+      </div>
+      
+      <div class="ai-panel">
+        <h3 style="margin-bottom:10px;" data-i18n="aiStudyPlan">AI SAT Study Plan</h3>
+        <button class="btn purple" id="student-plan-btn" onclick="getStudentAIPlan()" style="margin-bottom:15px;" data-i18n="generatePlanBtn">Generate plan →</button>
+        <div id="student-plan-text" style="color:var(--muted); white-space: pre-wrap; font-size: 0.9rem;" data-i18n="planDesc">Click generate to build a personalized study schedule based on your diagnostic gaps.</div>
+      </div>
+      <button class="btn blue" onclick="goHome()" style="width:100%" data-i18n="homeBtn">Done — go back home</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-teacher">
+  <nav><span class="nav-brand" data-i18n="dashTitle">Teacher Dashboard</span><button class="btn secondary" onclick="goHome()" style="padding:0.4rem 0.9rem;font-size:0.8rem" data-i18n="logoutBtn">Logout</button></nav>
+  <div class="container wide">
+    <br>
+    <div class="dash-header">
+      <div>
+        <h2 id="dash-class-title"><span data-i18n="classPrefix">Class</span><span id="dash-class-code-append"> —</span></h2>
+        <div style="font-size:0.85rem;color:var(--muted);margin-top:8px;">Code: <span class="code-display" id="dash-code">—</span></div>
+      </div>
+      <button class="btn" onclick="loadDashboard()" data-i18n="refreshBtn">Refresh Data</button>
+    </div>
+    
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" id="d-students">0</div><div style="font-size:0.75rem; color:var(--muted); text-transform:uppercase;" data-i18n="statStudents">Students</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-avg">—</div><div style="font-size:0.75rem; color:var(--muted); text-transform:uppercase;" data-i18n="statAvg">Class avg</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-lowest">—</div><div style="font-size:0.75rem; color:var(--muted); text-transform:uppercase;" data-i18n="statGap">Biggest gap</div></div>
+    </div>
+
+    <div id="dash-content" style="display:none">
+      <div class="heatmap">
+        <div style="font-size: 0.78rem; font-weight: 500; color: var(--muted); text-transform: uppercase; margin-bottom: 1.25rem;" data-i18n="classPerfTitle">Class performance by subsection</div>
+        <div id="heatmap-rows"></div>
+      </div>
+
+      <div class="ai-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="margin:0;" data-i18n="aiRecsTitle">AI Teaching Recommendations</h3>
+          <button class="btn purple" onclick="getAIRecs()" id="ai-btn" data-i18n="aiBtn">Generate →</button>
+        </div>
+        <div id="ai-text" style="color:var(--muted);font-size:0.88rem; white-space: pre-wrap;" data-i18n="aiRecsDesc">Click generate to get an AI-powered lesson plan for next week based on class weaknesses.</div>
+      </div>
+
+      <table class="student-table" style="margin-top:1rem">
+        <thead><tr><th data-i18n="tableStudent">Student</th><th data-i18n="tableTotal">Total</th><th>R&W</th><th>Math</th><th data-i18n="tableTopGap">Biggest gap</th></tr></thead>
+        <tbody id="student-rows"></tbody>
+      </table>
+    </div>
+    <div id="empty-dash" style="text-align: center; padding: 3rem; color: var(--muted); border: 1px dashed var(--border2); border-radius: var(--radius);"><p data-i18n="noStudents">No students have completed the diagnostic yet.</p></div>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// 1. CONFIG & STATE 
+// ==========================================
+const GEMINI_API_KEY = "AQ.Ab8RN6LhsLU6uUrpna8zyuBWBMmZjfNOIgcS7jur_oha6xEvwg"; 
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+let aiEnabled = true;
+let classCode = '';
+let studentName = '';
+let currentQ = 0;
+let allRealQuestions = [];
+let answers = [];
+let currentLang = 'en';
+
+// ==========================================
+// 2. DICTIONARY & TRANSLATION ENGINE
+// ==========================================
+const dictionary = {
+  en: {
+    heroTitle: "Valley SAT Prep", heroSub: "AI-powered diagnostics for Central Valley classrooms.",
+    studentRole: "I'm a student", studentDesc: "Take the diagnostic, see your gaps",
+    teacherRole: "I'm a teacher", teacherDesc: "See your class dashboard",
+    joinBtn: "Join →", loginHomeBtn: "Open dashboard →", navBrand: "Valley SAT Prep",
+    beforeStart: "Before we start", beforeDesc: "Your results go to your teacher's class dashboard anonymously.",
+    startBtn: "Start diagnostic →", generating: "Loading question…", nextBtn: "Next →",
+    homeBtn: "Back Home", dashTitle: "Teacher Dashboard", logoutBtn: "Logout",
+    statStudents: "Students completed", statAvg: "Class avg score", statGap: "Biggest gap area",
+    aiBtn: "Generate AI Lesson Plan", tableStudent: "Student", tableTotal: "Total Score", tableTopGap: "Top Gap",
+    classCodeStudent: "Class Code (e.g. CSUB01)", classCodeTeacher: "Class Code", firstNamePlaceholder: "Your first name",
+    openTutorBtn: "Open AI Tutor", tutorTitle: "AI SAT Tutor", askHint: "Ask for a hint...", sendBtn: "Send",
+    aiTutorTitleTag: "AI Tutor", aiTutorDescTag: "Hints only during the diagnostic.", hideTutorBtn: "Hide AI Tutor",
+    tutorWelcome: "<strong>AI Tutor:</strong> I'm here to help! I can't give you the answer, but what part of this question is tricky?",
+    youMsg: "You:", tutorMsg: "Tutor:", sysError: "System: Connection error.", aiStudyPlan: "AI SAT Study Plan",
+    generatePlanBtn: "Generate plan →", planDesc: "Click generate to build a personalized study schedule based on your diagnostic gaps.",
+    generatingText: "Generating...", regenerateBtn: "Regenerate →", refreshBtn: "Refresh Data",
+    aiRecsTitle: "AI Teaching Recommendations", aiRecsDesc: "Click generate to get an AI-powered lesson plan for next week based on class weaknesses.",
+    noStudents: "No students have completed the diagnostic yet.", classPrefix: "Class", questionLabel: "Question",
+    ofLabel: "of", mathTitle: "Math", rwTitle: "Reading & Writing", classPerfTitle: "Class performance by subsection",
+    predictedScore: "predicted SAT score", freeResponsePlaceholder: "Type your answer...", submitBtn: "Submit Answer",
+    needsReview: "Needs Review", alertEmptyCode: "Please enter a class code!", alertLoading: "Questions are loading from JSON. Try again."
+  },
+  es: {
+    heroTitle: "Preparación SAT del Valle", heroSub: "Diagnósticos impulsados por IA para las aulas del Valle Central.",
+    studentRole: "Soy estudiante", studentDesc: "Toma el diagnóstico, ve tus áreas de mejora",
+    teacherRole: "Soy maestro", teacherDesc: "Ve el panel de tu clase",
+    joinBtn: "Unirse →", loginHomeBtn: "Iniciar Sesión →", navBrand: "Preparación SAT del Valle",
+    beforeStart: "Antes de comenzar", beforeDesc: "Tus resultados van al panel de tu maestro de forma anónima.",
+    startBtn: "Comenzar diagnóstico →", generating: "Traduciendo pregunta con IA...", nextBtn: "Siguiente →",
+    homeBtn: "Volver al Inicio", dashTitle: "Panel del Maestro", logoutBtn: "Cerrar Sesión",
+    statStudents: "Estudiantes", statAvg: "Puntaje promedio", statGap: "Mayor necesidad",
+    aiBtn: "Generar Plan de Clase", tableStudent: "Estudiante", tableTotal: "Puntaje Total", tableTopGap: "Mayor Necesidad",
+    classCodeStudent: "Código de Clase (ej. CSUB01)", classCodeTeacher: "Código de Clase", firstNamePlaceholder: "Tu nombre",
+    openTutorBtn: "Abrir Tutor IA", tutorTitle: "Tutor IA SAT", askHint: "Pide una pista...", sendBtn: "Enviar",
+    aiTutorTitleTag: "Tutor IA", aiTutorDescTag: "Pistas solo durante el diagnóstico.", hideTutorBtn: "Ocultar Tutor IA",
+    tutorWelcome: "<strong>Tutor de IA:</strong> ¡Estoy aquí para ayudar! No puedo darte la respuesta, pero ¿qué parte de esta pregunta es difícil?",
+    youMsg: "Tú:", tutorMsg: "Tutor:", sysError: "Sistema: Error de conexión.", aiStudyPlan: "Plan de Estudio IA",
+    generatePlanBtn: "Generar plan →", planDesc: "Haz clic en generar para construir un horario de estudio personalizado basado en tus áreas de mejora.",
+    generatingText: "Generando...", regenerateBtn: "Regenerar →", refreshBtn: "Actualizar Datos",
+    aiRecsTitle: "Recomendaciones de Enseñanza IA", aiRecsDesc: "Obtén un plan de lecciones impulsado por IA para la próxima semana.",
+    noStudents: "Ningún estudiante ha completado el diagnóstico aún.", classPrefix: "Clase", questionLabel: "Pregunta",
+    ofLabel: "de", mathTitle: "Matemáticas", rwTitle: "Lectura y Escritura", classPerfTitle: "Rendimiento de la clase por subsección",
+    predictedScore: "puntaje estimado", freeResponsePlaceholder: "Escribe tu respuesta...", submitBtn: "Enviar Respuesta",
+    needsReview: "Necesita Repaso", alertEmptyCode: "¡Por favor ingresa un código de clase!", alertLoading: "Las preguntas se están cargando. Intenta de nuevo."
+  }
+};
+
+function setLanguage(lang) {
+  currentLang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dictionary[lang][key]) {
+      if (el.tagName === 'INPUT') el.placeholder = dictionary[lang][key];
+      else el.innerHTML = dictionary[lang][key];
+    }
+  });
+}
+
+function toggleLanguage() {
+  const newLang = currentLang === 'en' ? 'es' : 'en';
+  setLanguage(newLang);
+  document.getElementById('lang-toggle-btn').textContent = newLang === 'en' ? 'Español' : 'English';
+  
+  if (document.getElementById('student-q-screen').style.display === 'block') loadQuestion(); 
+  if (document.getElementById('page-teacher').classList.contains('active')) loadDashboard();
+}
+
+async function callAI(system, user, isJSON = false) {
+  if (!aiEnabled) throw new Error('AI disabled');
+
+  const payload = { contents: [{ parts: [{ text: system + "\n\n" + user }] }] };
+  if (isJSON) payload.generationConfig = { responseMimeType: "application/json" };
+
+  const res = await fetch(GEMINI_API_URL, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.candidates[0].content.parts[0].text.replace(/```json|```/g,'').trim();
+}
+
+async function translateQuestionLive(questionObj) {
+  if (currentLang !== 'es') return questionObj;
+  const prompt = `Translate the following SAT question, choices, and rationale into Spanish. Return ONLY valid JSON matching this structure:
+  {"question": "...", "choices": {"A":"..."}, "rationale": "..."} \n\n ${JSON.stringify({
+     question: questionObj.question, choices: questionObj.choices || {}, rationale: questionObj.rationale
+  })}`;
+  try {
+    const txt = await callAI("You are a helpful translator.", prompt, true);
+    return { ...questionObj, ...JSON.parse(txt) };
+  } catch(e) { 
+    console.warn("Translation failed or rate limit hit. Falling back to English.", e); 
+    return questionObj; // Prevents the app from freezing!
+  }
+}
+
+// ==========================================
+// 3. LOAD JSON QUESTIONS 
+// ==========================================
+async function fetchStaticQuestions() {
+  try {
+    const response = await fetch('valley_sat_40_question_sample.json');
+    const data = await response.json();
+    allRealQuestions = data.questions.slice(0, 10); // Limits the practice test to a max of 10 questions
+  } catch (e) { console.error("Could not load JSON. Ensure you are running a local server.", e); }
+}
+fetchStaticQuestions();
+
+// ==========================================
+// 4. UI NAVIGATION & LOGIN
+// ==========================================
+function showPage(id) { 
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+    document.getElementById(id).classList.add('active'); 
+}
+
+function goHome() { 
+    currentQ = 0; answers = []; 
+    document.getElementById('role-input-area').innerHTML = ''; 
+    document.getElementById('student-q-screen').style.display = 'none';
+    document.getElementById('student-results').style.display = 'none';
+    document.getElementById('student-name-screen').style.display = 'block';
+    showPage('page-home'); 
+}
+
+function showRoleInput(role) {
+  const area = document.getElementById('role-input-area');
+  if (role === 'student') {
+    area.innerHTML = `<div class="class-input-wrap"><input type="text" id="home-code" placeholder="Class Code (e.g. CSUB01)" style="text-transform:uppercase" data-i18n="classCodeStudent"><button class="btn" onclick="joinAsStudent()" data-i18n="joinBtn">Join →</button></div>`;
+  } else {
+    area.innerHTML = `
+      <div style="display: flex; flex-direction: column;">
+        <input type="email" id="teacher-email" placeholder="Email Address">
+        <input type="password" id="teacher-password" placeholder="Password">
+        <div class="class-input-wrap">
+          <input type="text" id="home-code" placeholder="Class Code" style="text-transform:uppercase" data-i18n="classCodeTeacher">
+          <button class="btn blue" onclick="joinAsTeacher()" data-i18n="loginHomeBtn">Open dashboard →</button>
+        </div>
+      </div>`;
+  }
+  setLanguage(currentLang);
+}
+
+function joinAsStudent() {
+  classCode = (document.getElementById('home-code').value || '').toUpperCase().trim();
+  if (!classCode) return alert(dictionary[currentLang]['alertEmptyCode']);
+  document.getElementById('student-class-label').textContent = classCode;
+  showPage('page-student');
+}
+
+function joinAsTeacher() {
+  const email = document.getElementById('teacher-email')?.value.trim();
+  const pass = document.getElementById('teacher-password')?.value;
+  if (document.getElementById('teacher-email') && (!email || !pass)) {
+    return alert("Please enter your email and password to log in.");
+  }
+
+  classCode = (document.getElementById('home-code').value || 'DEMO').toUpperCase().trim();
+  document.getElementById('dash-class-code-append').textContent = ' — ' + classCode;
+  document.getElementById('dash-code').textContent = classCode;
+  showPage('page-teacher');
+  loadDashboard();
+}
+
+// ==========================================
+// 5. STUDENT DIAGNOSTIC
+// ==========================================
+function startDiagnostic() {
+  studentName = document.getElementById('student-name-input').value.trim() || "Student";
+  document.getElementById('student-name-screen').style.display = 'none';
+  document.getElementById('student-q-screen').style.display = 'block';
+  loadQuestion();
+}
+
+async function loadQuestion() {
+  if (allRealQuestions.length === 0) return alert(dictionary[currentLang]['alertLoading']);
+  
+  document.getElementById('q-loading').style.display = 'flex';
+  document.getElementById('q-content').style.display = 'none';
+  document.getElementById('explanation').style.display = 'none';
+  document.getElementById('next-btn').disabled = true;
+
+  // Use full length so you can pass question 3!
+  const maxQuestions = allRealQuestions.length; 
+  document.getElementById('q-counter').textContent = `${dictionary[currentLang]['questionLabel']} ${currentQ + 1} ${dictionary[currentLang]['ofLabel']} ${maxQuestions}`;
+  document.getElementById('prog').style.width = `${((currentQ + 1) / maxQuestions) * 100}%`;
+
+  let q = allRealQuestions[currentQ];
+  const tag = document.getElementById('q-section-tag');
+  const isMath = q.section === "Math";
+  tag.textContent = isMath ? dictionary[currentLang]['mathTitle'] : dictionary[currentLang]['rwTitle'];
+  tag.className = `q-section-tag ${isMath ? 'tag-math' : 'tag-rw'}`;
+
+  // Process JIT translation
+  q = await translateQuestionLive(q);
+
+  document.getElementById('q-loading').style.display = 'none';
+  document.getElementById('q-content').style.display = 'block';
+  document.getElementById('q-text').textContent = q.question;
+
+  // Render Prompt Images
+  const imgEl = document.getElementById('q-image');
+  if (q.hasPromptImage && q.questionImage) { 
+      imgEl.src = q.questionImage; 
+      imgEl.style.display = 'block'; 
+  } else { 
+      imgEl.style.display = 'none'; 
+  }
+
+  const grid = document.getElementById('answers');
+  if (q.hasChoices) {
+    grid.innerHTML = Object.entries(q.choices).map(([letter, text]) => 
+      `<button class="answer-btn" onclick="selectAnswer('${letter}', '${q.correctAnswer}', '${q.section}', '${q.domain}', this, \`${(q.rationale||'').replace(/[`']/g, "")}\`)"><b>${letter}.</b> ${text}</button>`
+    ).join('');
+  } else {
+    grid.innerHTML = `<input type="text" id="free-response" placeholder="${dictionary[currentLang]['freeResponsePlaceholder']}"><button class="btn secondary" style="width:100%" onclick="selectAnswer(document.getElementById('free-response').value, '${q.correctAnswer}', '${q.section}', '${q.domain}', null, \`${(q.rationale||'').replace(/[`']/g, "")}\`)">${dictionary[currentLang]['submitBtn']}</button>`;
+  }
+
+  document.getElementById('chat-history').innerHTML = '';
+  document.getElementById('ai-tutor-panel').style.display = 'none';
+  document.getElementById('tutor-toggle-btn').textContent = dictionary[currentLang]['openTutorBtn'];
+}
+
+function selectAnswer(selected, correct, section, domain, btnElement, rationale) {
+  document.querySelectorAll('.answer-btn').forEach(b => b.onclick = null);
+  const isCorrect = String(selected).trim().toLowerCase() === String(correct).trim().toLowerCase();
+  
+  if (btnElement) {
+    if (isCorrect) btnElement.classList.add('correct');
+    else {
+      btnElement.classList.add('incorrect');
+      document.querySelectorAll('.answer-btn').forEach(b => { if (b.textContent.startsWith(correct + ".")) b.classList.add('correct'); });
+    }
+  }
+
+  answers[currentQ] = { correct: isCorrect, section, sub: domain };
+  const expEl = document.getElementById('explanation');
+  expEl.textContent = (isCorrect ? '✓ ' : '✗ ') + rationale;
+  expEl.style.display = 'block';
+  document.getElementById('next-btn').disabled = false;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= allRealQuestions.length) {
+    showResults();
+  } else {
+    loadQuestion();
+  }
+}
+
+function setAIEnabled(val) { aiEnabled = val; }
+
+function toggleTutor() {
+  const panel = document.getElementById('ai-tutor-panel');
+  const btn = document.getElementById('tutor-toggle-btn');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    btn.textContent = dictionary[currentLang]['hideTutorBtn'];
+    const hist = document.getElementById('chat-history');
+    if (hist.children.length === 0) hist.innerHTML += `<div>${dictionary[currentLang]['tutorWelcome']}</div>`;
+  } else {
+    panel.style.display = 'none';
+    btn.textContent = dictionary[currentLang]['openTutorBtn'];
+  }
+}
+
+async function sendTutorMessage() {
+  const input = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('chat-send-btn');
+  const msg = input.value.trim();
+  if (!msg) return;
+  
+  const hist = document.getElementById('chat-history');
+  hist.innerHTML += `<div style="margin-top:10px;"><strong>${dictionary[currentLang]['youMsg']}</strong> ${msg}</div>`;
+  input.value = '';
+  sendBtn.disabled = true;
+  
+  const q = allRealQuestions[currentQ];
+  const sys = `You are a helpful SAT tutor. Do not give the exact answer. Guide the student with a hint. Always reply in ${currentLang==='es'?'Spanish':'English'}.`;
+  
+  try {
+    const reply = await callAI(sys, `Question: ${q.question}\nStudent says: ${msg}`);
+    hist.innerHTML += `<div style="margin-top:10px;color:var(--accent2);"><strong>${dictionary[currentLang]['tutorMsg']}</strong> ${reply}</div>`;
+  } catch(e) {
+    // Advanced error handling from SATLogin.html integrated here!
+    const message = String((e && e.message) ? e.message : e);
+    if (message.includes('rate limit') || message.includes('429')) {
+      hist.innerHTML += `<div style="margin-top:10px;color:var(--danger);"><strong>${dictionary[currentLang]['tutorMsg']}</strong> Gemini is rate-limiting requests right now. Wait about 30–60 seconds, then try again. Look for the main concept being tested!</div>`;
+    } else if (message.includes('503') || message.includes('unavailable') || message.includes('overloaded')) {
+      hist.innerHTML += `<div style="margin-top:10px;color:var(--danger);"><strong>${dictionary[currentLang]['tutorMsg']}</strong> Gemini is temporarily unavailable. Try again in a moment.</div>`;
+    } else {
+      hist.innerHTML += `<div style="margin-top:10px;color:var(--danger);"><strong>${dictionary[currentLang]['sysError']}</strong> ${message}</div>`;
+    }
+  } finally {
+    sendBtn.disabled = false;
+    hist.scrollTop = hist.scrollHeight;
+  }
+}
+
+// ==========================================
+// 6. RESULTS & DASHBOARD
+// ==========================================
+function showResults() {
+  document.getElementById('student-q-screen').style.display = 'none';
+  document.getElementById('student-results').style.display = 'block';
+
+  let rwTot = 0, rwCor = 0, mTot = 0, mCor = 0;
+  answers.forEach(ans => {
+    if (ans.section === "Math") { mTot++; if (ans.correct) mCor++; }
+    else { rwTot++; if (ans.correct) rwCor++; }
+  });
+
+  const rwScore = rwTot === 0 ? 0 : Math.round((rwCor / rwTot) * 400 + 400);
+  const mScore = mTot === 0 ? 0 : Math.round((mCor / mTot) * 400 + 400);
+  
+  document.getElementById('r-rw').textContent = rwScore;
+  document.getElementById('r-math').textContent = mScore;
+  document.getElementById('r-total').textContent = rwScore + mScore;
+
+  let classData = JSON.parse(localStorage.getItem(classCode)) || [];
+  classData.push({ name: studentName, rwScore, mathScore: mScore, totalScore: rwScore + mScore, topGap: answers[0]?.sub || 'Concepts' });
+  localStorage.setItem(classCode, JSON.stringify(classData));
+}
+
+async function getStudentAIPlan() {
+  const textEl = document.getElementById('student-plan-text');
+  const btn = document.getElementById('student-plan-btn');
+  btn.textContent = dictionary[currentLang]['generatingText']; btn.disabled = true;
+  const prompt = `Act as an encouraging SAT prep coach. The student scored ${document.getElementById('r-total').textContent}/1600. Give a 3-bullet point study plan for the next week based on this. Reply in ${currentLang==='es'?'Spanish':'English'}.`;
+  try {
+    textEl.textContent = await callAI('You are an SAT coach.', prompt);
+    textEl.style.color = 'var(--text)';
+  } catch(e) { textEl.textContent = "Error: Check API Key or Rate Limit."; }
+  btn.textContent = dictionary[currentLang]['regenerateBtn']; btn.disabled = false;
+}
+
+function loadDashboard() {
+  let classData = JSON.parse(localStorage.getItem(classCode)) || [];
+  if (classData.length === 0) {
+    document.getElementById('empty-dash').style.display = 'block';
+    document.getElementById('dash-content').style.display = 'none';
+  } else {
+    document.getElementById('empty-dash').style.display = 'none';
+    document.getElementById('dash-content').style.display = 'block';
+    
+    document.getElementById('d-students').textContent = classData.length;
+    document.getElementById('d-avg').textContent = Math.round(classData.reduce((acc, curr) => acc + curr.totalScore, 0) / classData.length);
+    document.getElementById('d-lowest').textContent = classData[0].topGap;
+    
+    document.getElementById('heatmap-rows').innerHTML = `<div class="heatmap-row"><div class="heatmap-track"><div class="heatmap-fill" style="width: 75%; background: var(--warn);"></div></div></div>`;
+    document.getElementById('student-rows').innerHTML = classData.map(st => `<tr><td>${st.name}</td><td><b>${st.totalScore}</b></td><td style="color:var(--accent2)">${st.rwScore}</td><td style="color:var(--purple)">${st.mathScore}</td><td><span style="font-size:0.75rem; color:var(--muted)">${st.topGap}</span></td></tr>`).join('');
+  }
+}
+
+async function getAIRecs() {
+  const textEl = document.getElementById('ai-text');
+  const btn = document.getElementById('ai-btn');
+  btn.textContent = dictionary[currentLang]['generatingText']; btn.disabled = true;
+  const prompt = `As a teacher, my class average is ${document.getElementById('d-avg').textContent}/1600. Give me 3 fast, actionable lesson plan ideas for next week. Reply in ${currentLang==='es'?'Spanish':'English'}.`;
+  try {
+    textEl.textContent = await callAI('You are an expert instructional coach.', prompt);
+    textEl.style.color = 'var(--text)';
+  } catch(e) { textEl.textContent = "Error: Check API Key or Rate Limit."; }
+  btn.textContent = dictionary[currentLang]['regenerateBtn']; btn.disabled = false;
+}
+</script>
+</body>
+</html>
